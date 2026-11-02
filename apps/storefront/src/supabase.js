@@ -165,3 +165,29 @@ export async function setResearchPermission(id,status) {
     body:JSON.stringify({rights_status:status,updated_at:new Date().toISOString()})
   },true);
 }
+
+
+// Authenticated supplier-image review gallery. Never writes to bm_products.
+export async function imageCandidates() {
+  return fetchApi('/rest/v1/bm_product_candidates?select=id,source_url,source_host,supplier_sku,name,image_urls,review_status,created_at&order=created_at.desc&limit=60',{},true);
+}
+export async function previewApprovedPhotos(sourceUrl) {
+  return fetchApi('/functions/v1/approved-photo-import',{
+    method:'POST',
+    body:JSON.stringify({mode:'preview',source_url:sourceUrl})
+  },true);
+}
+export async function importApprovedPhotos(sourceUrl,images) {
+  return fetchApi('/functions/v1/approved-photo-import',{
+    method:'POST',
+    body:JSON.stringify({mode:'import',source_url:sourceUrl,selected_urls:images})
+  },true);
+}
+export async function setImageCandidateReview(id,status) {
+  if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Görsel adayı kimliği geçersiz.');
+  if(!['needs_review','accepted','rejected'].includes(status))throw new Error('Geçersiz inceleme durumu.');
+  return fetchApi('/rest/v1/bm_product_candidates?id=eq.'+id,{
+    method:'PATCH',headers:{Prefer:'return=representation'},
+    body:JSON.stringify({review_status:status,updated_at:new Date().toISOString()})
+  },true);
+}
