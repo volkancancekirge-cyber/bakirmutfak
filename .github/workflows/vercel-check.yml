@@ -19,6 +19,12 @@ jobs:
           python-version: '3.12'
       - name: Python supplier bot tests
         run: python -m unittest discover -s tools/tests -p 'test_*.py' -v
+      - name: Install Deno for Supabase Edge Function
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check approved supplier photo importer
+        run: deno check supabase/functions/approved-photo-import/index.ts
       - name: Install dependencies
         working-directory: apps/storefront
         run: npm install --no-audit --no-fund
