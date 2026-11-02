@@ -178,7 +178,8 @@ async function fetchListing(url:string,host:string):Promise<string>{
  if(!response.ok)throw Error("Katalog kaynağı HTTP "+response.status+" hatası döndürdü.");
  return new TextDecoder().decode(await readLimited(response,2_500_000));
 }
-type Client=ReturnType<typeof createClient>;
+// The dynamic RLS-bound REST tables are not generated TS schemas in this Edge bundle.
+type Client=any;
 async function discovery(client:Client,host:string,page:number){
  const urls:string[]=[];
  const notes:string[]=[];
