@@ -134,3 +134,7 @@ export async function applyXmlImport(filename, rows, allowLargePriceChanges) {
     body:JSON.stringify({p_source:filename.slice(0,120),p_rows:rows,p_allow_large_price_changes:!!allowLargePriceChanges})
   }, true);
 }
+
+export async function productAudit() {
+  return fetchApi('/rest/v1/bm_product_audit?select=id,sku,action,before_state,after_state,created_at&order=created_at.desc&limit=80', {}, true);
+}
