@@ -138,3 +138,30 @@ export async function applyXmlImport(filename, rows, allowLargePriceChanges) {
 export async function productAudit() {
   return fetchApi('/rest/v1/bm_product_audit?select=id,sku,action,before_state,after_state,created_at&order=created_at.desc&limit=80', {}, true);
 }
+
+
+export async function researchSources() {
+  return fetchApi('/rest/v1/bm_research_sources?select=id,source_name,source_url,source_host,category,rights_status,notes,created_at&order=created_at.desc&limit=80',{},true);
+}
+export async function addResearchSource(source_name,source_url,category='genel') {
+  const name=String(source_name||'').trim();
+  const input=String(source_url||'').trim();
+  if(name.length<2||name.length>120)throw new Error('Kaynak adı 2–120 karakter olmalı.');
+  let u;try{u=new URL(input)}catch{throw new Error('Kaynak adresi geçersiz.');}
+  if(u.protocol!=='https:'||u.username||u.password||u.port||u.hash||!u.hostname.includes('.')
+     ||/^(localhost|127\.|10\.|192\.168\.|169\.254\.)/.test(u.hostname)||input.length>2048)
+    throw new Error('Yalnızca herkese açık HTTPS tedarikçi adresleri eklenebilir.');
+  if(!['genel','cezve','caydanlik','tencere','sofra'].includes(category))throw new Error('Kategori geçersiz.');
+  return fetchApi('/rest/v1/bm_research_sources',{
+    method:'POST',headers:{Prefer:'return=representation'},
+    body:JSON.stringify([{source_name:name,source_url:u.href,source_host:u.hostname,category,rights_status:'permission_needed'}])
+  },true);
+}
+export async function setResearchPermission(id,status) {
+  if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Kaynak kimliği geçersiz.');
+  if(!['permission_needed','approved','rejected'].includes(status))throw new Error('İzin durumu geçersiz.');
+  return fetchApi('/rest/v1/bm_research_sources?id=eq.'+id,{
+    method:'PATCH',headers:{Prefer:'return=representation'},
+    body:JSON.stringify({rights_status:status,updated_at:new Date().toISOString()})
+  },true);
+}
