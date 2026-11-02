@@ -84,10 +84,48 @@ export async function setPublished(id, value) {
 }
 
 export async function saveProduct(row) {
-  return fetchApi('/rest/v1/bm_products?on_conflict=sku', {
-    method:'POST', headers:{ Prefer:'resolution=merge-duplicates,return=representation' },
+  return fetchApi('/rest/v1/bm_products', {
+    method:'POST', headers:{ Prefer:'return=representation' },
     body:JSON.stringify([row])
   }, true);
+}
+
+export async function updateProduct(id, row) {
+  if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Geçersiz ürün kimliği.');
+  return fetchApi('/rest/v1/bm_products?id=eq.' + id, {
+    method:'PATCH', headers:{ Prefer:'return=representation' },
+    body:JSON.stringify(row)
+  }, true);
+}
+
+export async function uploadProductImage(file, sku) {
+  if (!configured) throw new Error('Supabase bağlantısı yapılandırılmadı.');
+  if (!session?.access_token) throw new Error('Yönetici oturumu gerekli.');
+  if (session.expires_at - 60 < Date.now()/1000) await refresh();
+  if (!(await getAdmin())) throw new Error('Yönetici yetkisi gerekli.');
+  if (!/^[A-Za-z0-9][A-Za-z0-9_-]{1,119}$/.test(sku)) throw new Error('Geçersiz SKU.');
+  const mime = {'image/jpeg':'jpg','image/png':'png','image/webp':'webp'};
+  const ext = mime[file.type];
+  if (!ext || !file.size || file.size > 5 * 1024 * 1024) {
+    throw new Error('Yalnızca JPEG, PNG veya WebP ve en fazla 5 MB fotoğraf yüklenebilir.');
+  }
+  const key = 'products/' + sku + '/' + crypto.randomUUID() + '.' + ext;
+  const response = await fetch(url + '/storage/v1/object/bm-product-images/' + key, {
+    method: 'POST',
+    headers: {
+      apikey: rawKey,
+      Authorization: 'Bearer ' + session.access_token,
+      'Content-Type': file.type,
+      'cache-control': '3600',
+      'x-upsert': 'false'
+    },
+    body: file
+  });
+  if (!response.ok) {
+    const detail = await response.json().catch(() => ({}));
+    throw new Error(detail.message || detail.error || 'Fotoğraf yüklenemedi.');
+  }
+  return url + '/storage/v1/object/public/bm-product-images/' + key;
 }
 
 export async function applyXmlImport(filename, rows, allowLargePriceChanges) {
