@@ -40,3 +40,18 @@ foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator($src, File
     $count++;
 }
 echo "Bakır Mutfak theme: {$count} files copied. Activate bakirmutfak in channel theme settings. Clear config cache.\n";
+
+// Register the XML admin extension after Bagisto AdminServiceProvider.
+$providersPath = $target . '/bootstrap/providers.php';
+$providers = file_get_contents($providersPath);
+$needle = "    AdminServiceProvider::class,";
+$registration = "    \\App\\Providers\\BakirMutfakXmlServiceProvider::class,";
+if (!str_contains($providers, 'BakirMutfakXmlServiceProvider::class')) {
+    if (substr_count($providers, $needle) !== 1) {
+        throw new RuntimeException('Unexpected provider list: refusing to alter auth configuration');
+    }
+    $providers = str_replace($needle, $needle . "\n" . $registration, $providers);
+    if (file_put_contents($providersPath, $providers) === false) {
+        throw new RuntimeException('Unable to register BakirMutfakXmlServiceProvider');
+    }
+}

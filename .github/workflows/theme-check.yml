@@ -23,12 +23,18 @@ jobs:
       - name: Verify config and Blade files
         run: |
           php -l upstream/config/themes.php
+          php -l upstream/bootstrap/providers.php
+          php -l upstream/app/Providers/BakirMutfakXmlServiceProvider.php
+          php -l upstream/app/Http/Controllers/Admin/BakirMutfakXmlController.php
           php -l upstream/resources/themes/bakirmutfak/views/home/index.blade.php
           php -l upstream/resources/themes/bakirmutfak/views/categories/view.blade.php
           php -l upstream/resources/themes/bakirmutfak/views/products/view.blade.php
           php -l upstream/resources/themes/bakirmutfak/views/components/layouts/index.blade.php
           test -s upstream/public/bakirmutfak/signature.css
+          test -s upstream/resources/views/bakirmutfak/xml-import.blade.php
+          grep -q 'BakirMutfakXmlServiceProvider::class' upstream/bootstrap/providers.php
       - name: Ensure patch is repeatable
         run: |
           php tools/install-theme.php upstream
           test "$(grep -c "'bakirmutfak' =>" upstream/config/themes.php)" = 1
+          test "$(grep -c "BakirMutfakXmlServiceProvider::class" upstream/bootstrap/providers.php)" = 1
