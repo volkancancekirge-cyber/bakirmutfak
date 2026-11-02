@@ -33,7 +33,7 @@ export function validateProduct(values) {
   if(!/^[A-Za-z0-9][A-Za-z0-9_-]{1,119}$/.test(sku))throw new Error('Ürün kodu (SKU) geçersiz.');
   if(name.length<2||name.length>250)throw new Error('Ürün adı 2–250 karakter olmalı.');
   if(!CATEGORY.has(category)||!TYPE.has(product_type))throw new Error('Kategori veya ürün türü geçersiz.');
-  if(!Number.isFinite(price)||price<=0||price>=100000000||Math.round(price*100)!==price*100)throw new Error('Fiyat 0 üstünde ve en fazla 2 ondalık haneli olmalı.');
+  if(!Number.isFinite(price)||price<=0||price>=100000000||Math.abs(price*100-Math.round(price*100))>1e-7)throw new Error('Fiyat 0 üstünde ve en fazla 2 ondalık haneli olmalı.');
   if(!Number.isSafeInteger(stock)||stock<0||stock>1000000)throw new Error('Stok 0–1.000.000 arasında bir tam sayı olmalı.');
   const description=String(values.description||'').trim();
   if(description.length>10000)throw new Error('Açıklama en fazla 10.000 karakter olabilir.');
