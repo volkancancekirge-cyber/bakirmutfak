@@ -196,7 +196,7 @@ Deno.serve(async(req)=>{
     const [contentType,ext]=mimeOf(fetched.data,fetched.contentType);
     const filename="candidates/"+host+"/"+crypto.randomUUID()+"."+ext;
     const {error:uploadErr}=await supabase.storage.from("bm-product-images")
-      .upload(filename,new Blob([fetched.data],{type:contentType}),
+      .upload(filename,new Blob([fetched.data as Uint8Array<ArrayBuffer>],{type:contentType}),
         {contentType,upsert:false,cacheControl:"3600"});
     if(uploadErr)throw Error("Storage upload failed");
     const {data:publicUrl}=supabase.storage.from("bm-product-images").getPublicUrl(filename);
