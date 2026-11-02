@@ -18,7 +18,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Python supplier bot tests
-        run: python -m unittest discover -s tools/tests -p 'test_supplier_preview.py' -v
+        run: python -m unittest discover -s tools/tests -p 'test_*.py' -v
       - name: Install dependencies
         working-directory: apps/storefront
         run: npm install --no-audit --no-fund
