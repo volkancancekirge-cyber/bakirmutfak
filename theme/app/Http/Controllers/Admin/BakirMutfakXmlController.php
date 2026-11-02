@@ -34,6 +34,8 @@ class BakirMutfakXmlController extends Controller
             abort(500, 'Ön izleme klasörü hazırlanamadı.');
         }
 
+        $this->purgeExpiredPreviews($dir);
+
         $token = Str::random(40);
         $source = $dir.'/'.$token.'.xml';
         $output = $dir.'/'.$token.'.csv';
@@ -41,7 +43,7 @@ class BakirMutfakXmlController extends Controller
 
         try {
             $process = new Process([
-                PHP_BINARY,
+                PHP_BINDIR.'/php',
                 base_path('tools/bm-xml-to-bagisto.php'),
                 $source,
                 $output,
@@ -75,6 +77,24 @@ class BakirMutfakXmlController extends Controller
         } finally {
             if (is_file($source)) {
                 @unlink($source);
+            }
+        }
+    }
+
+    /** Only this module's own expired temporary CSV files may be removed. */
+    private function purgeExpiredPreviews(string $directory): void
+    {
+        foreach (glob($directory.'/*.csv') ?: [] as $file) {
+            $name = basename($file);
+
+            if (! preg_match('/^[A-Za-z0-9]{40}\.csv$/D', $name)) {
+                continue;
+            }
+
+            $age = time() - (int) filemtime($file);
+
+            if ($age > self::MAX_AGE_SECONDS) {
+                @unlink($file);
             }
         }
     }
