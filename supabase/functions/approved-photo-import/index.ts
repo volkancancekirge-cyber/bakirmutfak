@@ -132,7 +132,7 @@ async function fetchSource(url,kind){
  const r=await fetch(url,{
   method:"GET",redirect:"error",
   signal:AbortSignal.timeout(12000),
-  headers:{"Accept":kind==="page"?"text/html,application/xhtml+xml":"image/avif,image/webp,image/png,image/jpeg","User-Agent":"BakirMutfakApprovedImporter/1.0"}
+  headers:{"Accept":kind==="page"?"text/html,application/xhtml+xml":"image/webp,image/png,image/jpeg","User-Agent":"BakirMutfakApprovedImporter/1.0"}
  });
  if(!r.ok)throw Error("Kaynak sunucu yanıt vermedi ("+r.status+").");
  const ct=(r.headers.get("content-type")||"").toLowerCase();
