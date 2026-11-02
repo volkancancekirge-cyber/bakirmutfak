@@ -2,6 +2,7 @@ import './admin.css';
 import {configured,currentSession,login,logout,getAdmin,adminProducts,setPublished,saveProduct,updateProduct,uploadProductImage,applyXmlImport,productAudit,researchSources,addResearchSource,setResearchPermission} from './supabase.js';
 import {mountProductEditor} from './product-editor.js';
 import {mountPhotoReview} from './photo-review.js';
+import {mountBulkCatalog} from './bulk-import.js';
 import {parseSupplierXml,csvFromRows} from './xml.js';
 
 const $=s=>document.querySelector(s);
@@ -86,7 +87,7 @@ if(tab==='products') {
 }
 if(tab==='xml')$('#feed-file').onchange=onFeed;
 if(tab==='history')$('#refresh-history').onclick=async()=>{try{audit=await productAudit();render()}catch(e){status(e.message,true)}};
-if(tab==='sources') { attachSourceActions(); mountPhotoReview(document.querySelector('.workspace')).catch(err=>status('Görsel paneli hazırlanamadı: '+err.message,true)); }
+if(tab==='sources') { attachSourceActions(); const workspace=document.querySelector('.workspace'); mountBulkCatalog(workspace).catch(err=>status('Toplu aktarım ekranı hazırlanamadı: '+err.message,true)); mountPhotoReview(workspace).catch(err=>status('Görsel paneli hazırlanamadı: '+err.message,true)); }
 }
 function openEditor(product) {
   const el=$('#add-product-form');
