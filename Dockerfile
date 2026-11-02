@@ -3,6 +3,8 @@
 FROM webkul/bagisto:2.5.0-nginx-mysql
 COPY theme/ /tmp/bakirmutfak/theme/
 COPY tools/install-theme.php /tmp/bakirmutfak/tools/install-theme.php
+COPY tools/xml-to-bagisto.php /usr/local/bin/bakirmutfak-xml.php
+COPY config/tedarikci-ornek.json /usr/local/share/bakirmutfak/mapping.json
 RUN php /tmp/bakirmutfak/tools/install-theme.php /var/www/bagisto \
     && php -l /var/www/bagisto/config/themes.php \
     && php -l /var/www/bagisto/resources/themes/bakirmutfak/views/home/index.blade.php \

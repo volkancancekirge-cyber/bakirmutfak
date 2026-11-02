@@ -25,3 +25,10 @@ Depo **public**. Gizli şifre, APP_KEY, DB erişimi ve ödeme anahtarı eklemeyi
 - https://devdocs.bagisto.com/theme-development/creating-store-theme.html
 - https://devdocs.bagisto.com/2.x/themes/
 - https://github.com/bagisto/bagisto/tree/2.5
+## Yeni: XML, görseller, stok ve fiyat aktarımı
+- [XML normalizasyonu ve güvenlik politikası](docs/XML-IMPORT.md): tedarikçi XML alanlarını Bagisto Data Transfer CSV'ye dönüştürme.
+- [Bulut yayın hazırlığı](docs/CLOUD-DEPLOY.md): hazır Bagisto Docker imajı, yerel Vite/Vue kurulumu gerektirmez.
+- [Yönetim paneli mimarisi](docs/ADMIN-SYSTEM.md): panelin mevcut özellikleri ve geliştirilecek tedarikçi merkezi.
+- GitHub Actions: **XML Import Safety** ve **Signature Theme Integration** otomatik testleri.
+
+Gerçek tedarikçi XML'i olmadan sadece örnek eşleştirme test edildi; yönetim panelinde tek tık XML senkronizasyonu henüz yoktur.

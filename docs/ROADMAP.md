@@ -15,3 +15,10 @@
 Bagisto kaynak sürümü 2.5 branch commit 2021548672bbece5caf39bded96b90cabacfd973 üzerinden alındı. Üst sürümlerde override diff'leri incelenmelidir.
 
 Dikkat: bu repo uygulama yerine uygulanabilir tema değişikliklerini içerir; dağıtıma hazır canlı Laravel uygulaması değildir.
+## XML ve bulut ilerlemesi
+- [x] Tedarikçi XML -> Bagisto CSV normalizasyonu; fiyat/stok/SKU/görsel HTTPS validasyonu.
+- [x] GitHub Actions bulut XML testleri.
+- [x] Derlenmiş Bagisto temel imajından Dockerfile (kullanıcının cihazında Vite/Composer gerekmez).
+- [ ] Gerçek supplier XML örneğiyle alan eşleştirme ve kategori/varyant yapısı.
+- [ ] Yönetim panelinde XML yükleme, önizleme, onay, işlem geçmişi ve zamanlama.
+- [ ] Harici DB bağlantısı, admin ilk kurulum, kalıcı storage, staging testleri ve hosting dağıtımı.

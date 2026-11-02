@@ -196,6 +196,10 @@ if (! is_file($input) || ! is_file($mappingFile) || $output === '' || realpath($
     stopImport('Usage: php tools/xml-to-bagisto.php input.xml output.csv config/mapping.json [--dry-run]');
 }
 
+if (! $dryRun && file_exists($output)) {
+    stopImport('Output file already exists; choose a new filename to prevent stale-data confusion');
+}
+
 if (! extension_loaded('xmlreader') || ! extension_loaded('simplexml') || ! extension_loaded('mbstring')) {
     stopImport('PHP extensions XMLReader, SimpleXML and mbstring required');
 }
