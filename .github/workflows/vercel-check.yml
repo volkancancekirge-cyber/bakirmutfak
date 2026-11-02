@@ -1,0 +1,31 @@
+name: Vercel frontend build verification
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: apps/storefront/package-lock.json
+      - name: Install dependencies
+        working-directory: apps/storefront
+        run: npm ci --no-audit --no-fund
+      - name: Syntax verification
+        working-directory: apps/storefront
+        run: npm run check
+      - name: Build storefront + admin
+        working-directory: apps/storefront
+        run: npm run build
+      - name: Check production output
+        run: |
+          test -s apps/storefront/dist/index.html
+          test -s apps/storefront/dist/admin.html
+          test -d apps/storefront/dist/assets

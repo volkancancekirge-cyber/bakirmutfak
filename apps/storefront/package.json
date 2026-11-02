@@ -10,6 +10,9 @@
     "check": "node --check src/store.js && node --check src/admin.js && node --check src/supabase.js && node --check src/xml.js"
   },
   "devDependencies": {
-    "vite": "^6.3.5"
+    "vite": "6.3.5"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

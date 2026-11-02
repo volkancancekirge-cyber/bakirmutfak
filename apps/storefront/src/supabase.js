@@ -1,6 +1,6 @@
 // Supabase REST client without a browser SDK; the anon key is public, RLS does all authorization.
 const rawUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const rawKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const rawKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 export const configured = /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/i.test(rawUrl) && rawKey.length > 20 && !rawKey.startsWith('YOUR_');
 const url = rawUrl.replace(/\/+$/, '');
 const sessionKey = 'bakirmutfak.admin.session';
@@ -20,10 +20,10 @@ async function fetchApi(path, options = {}, authorized = false) {
   if (!configured) throw new Error('Supabase bağlantı ayarları henüz girilmedi.');
   if (authorized && !session?.access_token) throw new Error('Yönetici oturumu gerekli.');
   if (authorized && session.expires_at - 60 < Date.now()/1000) await refresh();
-  const token = authorized ? session.access_token : rawKey;
+  const token = authorized ? session.access_token : (rawKey.split('.').length === 3 ? rawKey : null);
   const response = await fetch(url + path, {
     ...options,
-    headers: { apikey: rawKey, Authorization: 'Bearer ' + token, ...(options.body ? {'Content-Type':'application/json'} : {}), ...(options.headers || {}) }
+    headers: { apikey: rawKey, ...(token ? { Authorization: 'Bearer ' + token } : {}), ...(options.body ? {'Content-Type':'application/json'} : {}), ...(options.headers || {}) }
   });
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));
