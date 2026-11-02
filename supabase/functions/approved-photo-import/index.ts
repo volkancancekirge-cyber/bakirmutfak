@@ -9,12 +9,12 @@ const cors = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
 };
-const json = (payload, status = 200) => new Response(JSON.stringify(payload), {
+const json = (payload: unknown, status = 200) => new Response(JSON.stringify(payload), {
   status, headers: {...cors,"Content-Type":"application/json;charset=utf-8","Cache-Control":"no-store"}
 });
-function fail(code, message){return json({ok:false,error:message},code);}
+function fail(code: number, message: string){return json({ok:false,error:message},code);}
 
-function safeProductUrl(raw) {
+function safeProductUrl(raw: unknown) {
   if(typeof raw !== "string" || raw.length < 25 || raw.length > 1800) throw Error("Geçerli ürün bağlantısı gerekli.");
   let u;
   try { u = new URL(raw); } catch { throw Error("Ürün URL'si geçersiz."); }
@@ -30,18 +30,18 @@ function safeProductUrl(raw) {
   u.search="";
   return {url:u.toString(),host};
 }
-function htmlDecode(v){
+function htmlDecode(v: unknown){
  return String(v||"").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'")
   .replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Math.min(+n,1114111)));
 }
-function attr(tag, key) {
+function attr(tag: string, key: string) {
  const re=new RegExp("(?:^|\\s)"+key+"\\s*=\\s*(?:\\\"([^\\\"]*)\\\"|'([^']*)'|([^\\s>]+))","i");
  const m=tag.match(re);
  return htmlDecode(m?.[1]??m?.[2]??m?.[3]??"");
 }
-function imagesFromJsonLd(doc) {
- const arr=[];
- const visit=(v)=>{
+function imagesFromJsonLd(doc: string) {
+ const arr: any[]=[];
+ const visit=(v: any)=>{
   if(!v || typeof v !== "object")return;
   if(Array.isArray(v)){for(const x of v)visit(x);return;}
   if(v["@graph"])visit(v["@graph"]);
@@ -61,7 +61,7 @@ function imagesFromJsonLd(doc) {
  }
  return arr;
 }
-function extract(doc,base,host){
+function extract(doc: string,base: string,host: string){
  const meta=[];
  for(const m of doc.matchAll(/<meta\b[^>]{0,1500}>/gi)){
   const tag=m[0],name=(attr(tag,"property")||attr(tag,"name")).toLowerCase();
@@ -69,8 +69,8 @@ function extract(doc,base,host){
    meta.push(attr(tag,"content"));
  }
  const schema=imagesFromJsonLd(doc);
- const images=[];
- const allow=(raw)=>{
+ const images: string[]=[];
+ const allow=(raw: unknown)=>{
   if(typeof raw!=="string"||raw.length>1800)return;
   let u;
   try{u=new URL(htmlDecode(raw),base)}catch{return;}
@@ -101,12 +101,12 @@ function extract(doc,base,host){
  ).toUpperCase();
  return {name:title,sku:/^[A-Za-z0-9][A-Za-z0-9_-]{1,119}$/.test(supplierSku)?supplierSku:null,images:images.slice(0,8)};
 }
-async function readLimited(response,maxBytes){
+async function readLimited(response: Response,maxBytes: number): Promise<Uint8Array>{
  const len=Number(response.headers.get("content-length")||0);
  if(len>maxBytes)throw Error("Kaynak dosya boyut sınırını aşıyor.");
  const reader=response.body?.getReader();
  if(!reader)throw Error("Boş yanıt.");
- const parts=[];
+ const parts: Uint8Array[]=[];
  let total=0;
  try {
   while(true){
@@ -122,13 +122,15 @@ async function readLimited(response,maxBytes){
  for(const x of parts){buf.set(x,offset);offset+=x.length;}
  return buf;
 }
-function mimeOf(buffer,header){
+function mimeOf(buffer: Uint8Array,header: string): [string,string]{
  if(header.includes("image/jpeg")&&buffer[0]===255&&buffer[1]===216&&buffer[2]===255)return ["image/jpeg","jpg"];
  if(header.includes("image/png")&&[137,80,78,71,13,10,26,10].every((n,i)=>buffer[i]===n))return ["image/png","png"];
  if(header.includes("image/webp")&&new TextDecoder().decode(buffer.slice(0,4))==="RIFF"&&new TextDecoder().decode(buffer.slice(8,12))==="WEBP")return ["image/webp","webp"];
  throw Error("Görsel JPEG, PNG veya WebP olarak doğrulanamadı.");
 }
-async function fetchSource(url,kind){
+async function fetchSource(url: string,kind: 'page'): Promise<string>;
+async function fetchSource(url: string,kind: 'image'): Promise<{data:Uint8Array,contentType:string}>;
+async function fetchSource(url: string,kind: 'page'|'image'): Promise<string|{data:Uint8Array,contentType:string}>{
  const r=await fetch(url,{
   method:"GET",redirect:"error",
   signal:AbortSignal.timeout(12000),
@@ -172,7 +174,7 @@ Deno.serve(async(req)=>{
   if(mode==="preview")return json({ok:true,source_url:url,source_host:host,name:parsed.name,
    supplier_sku:parsed.sku,image_urls:parsed.images,mode:"preview"});
 
-  const selected=Array.isArray(input.selected_urls)?input.selected_urls.filter(x=>typeof x==="string"):[];
+  const selected: string[]=Array.isArray(input.selected_urls)?input.selected_urls.filter((x: unknown):x is string=>typeof x==="string"):[];
   const picked=[...new Set(selected)].filter(x=>parsed.images.includes(x)).slice(0,4);
   if(picked.length<1)return fail(422,"Kaynak sayfadaki fotoğraflardan en az birini seçmelisin.");
   if(selected.some(x=>!parsed.images.includes(x)))return fail(422,"Kaynakta olmayan görsel seçilemez.");
