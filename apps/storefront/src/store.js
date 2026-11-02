@@ -19,9 +19,25 @@ try{basket=JSON.parse(localStorage.getItem('bakirmutfak-basket')||'{}')||{}}catc
 const art=(p,extra='')=>{
   const u=(p.image_urls||[]).find(v=>/^https:\/\/[^<>"'\s]+$/i.test(v));
   if(u)return '<div class="art '+extra+'"><img src="'+escapeHTML(u)+'" alt="'+escapeHTML(p.name||'Bakır ürün')+'" loading="lazy"/></div>';
-  return '<div class="art art-'+escapeHTML(p.product_type||'cezve')+' '+extra+'" aria-label="Temsili bakır ürün görseli"><i class="art-shadow"></i><i class="art-body"></i><i class="art-handle"></i><i class="art-lid"></i><i class="art-knob"></i></div>';
+  return '<div class="product-photo-pending '+extra+'" aria-label="Ürün fotoğrafı henüz eklenmedi"><span class="pending-symbol">BM</span><small>ÜRÜN FOTOĞRAFI<br>HAZIRLANIYOR</small></div>';
 };
 const card=p=>'<article class="product"><a class="photo" href="#/product/'+encodeURIComponent(p.slug)+'">'+(p.badge?'<span class="ribbon">'+escapeHTML(p.badge)+'</span>':'')+art(p)+'</a><div class="product-meta"><span class="eyebrow">'+escapeHTML(categories[p.category]||'Bakır Mutfak')+'</span><a href="#/product/'+encodeURIComponent(p.slug)+'" class="product-name">'+escapeHTML(p.name)+'</a><small>'+escapeHTML(p.subtitle||p.material||'Özenli bakır seçkisi')+'</small><div class="price-row"><strong>'+format(p.price)+'</strong><button aria-label="'+escapeHTML(p.name)+' sepete ekle" data-add="'+escapeHTML(p.sku)+'" '+(p.stock?'':'disabled')+'>＋</button></div></div></article>';
+const editorialPhoto = {
+  hero: ['10397022','Eski bir mutfakta gerçek bakır tencereler'],
+  cezve: ['28554501','Türk kahvesi hazırlanan bakır cezveler'],
+  caydanlik: ['34391572','Gaziantep bakır çarşısındaki geleneksel ürünler'],
+  tencere: ['35225640','Geleneksel bakır mutfak kapları'],
+  sofra: ['2610820','Bakır ve pirinç mutfak eşyalarının sergilendiği pazar'],
+  craft: ['16770951','Çeşitli gerçek bakır mutfak eşyaları'],
+  journal: ['10397050','Mutfak duvarındaki bakır tavalar'],
+  finale: ['17205592','Bakır eşyalarla döşenmiş sıcak mutfak']
+};
+const photo = (key, className='', eager=false) => {
+  const [id, alt]=editorialPhoto[key];
+  const w=eager?1600:900;
+  const src='https://images.pexels.com/photos/'+id+'/pexels-photo-'+id+'.jpeg?auto=compress&cs=tinysrgb&w='+w;
+  return '<img class="editorial-photo '+className+'" src="'+src+'" alt="'+escapeHTML(alt)+'" loading="'+(eager?'eager':'lazy')+'" decoding="async"'+(eager?' fetchpriority="high"':'')+' onerror="this.hidden=true;this.parentElement.classList.add(\'photo-unavailable\')">';
+};
 const sections=(caption,title,right,href)=>'<div class="section-head"><div><span class="eyebrow">'+caption+'</span><h2>'+title+'</h2></div><a class="underlink" href="'+href+'">'+right+' ↗</a></div>';
 
 const discovery=[
@@ -33,14 +49,14 @@ const discovery=[
 function discoveryCard(d){
   return `<a href="#/catalog/${d.category}" class="discovery-card discovery-${d.category}" aria-label="${d.name} koleksiyonunu aç">
     <div class="discovery-top"><span>${d.number} / ${d.tag}</span><span aria-hidden="true">↗</span></div>
-    ${art({product_type:d.shape},'discovery-art')}
+    ${photo(d.category,'discovery-photo')}
     <div class="discovery-bottom"><div><h3>${d.name}</h3><p>${d.copy}</p></div><span class="discovery-arrow" aria-hidden="true">↗</span></div>
   </a>`;
 }
 function exploreCard(d){
  return `<a class="explore-card" href="#/catalog/${d.category}">
     <span class="explore-number">${d.number} / KOLEKSİYON REHBERİ</span>
-    ${art({product_type:d.shape},'explore-art')}
+    ${photo(d.category,'explore-photo')}
     <div class="explore-bottom"><h3>${d.name}</h3><span>Keşfet ↗</span></div>
   </a>`;
 }
@@ -59,8 +75,8 @@ function home(){
       <div class="hero-visual signature-visual">
         <div class="hero-halo"></div><div class="signature-orbit" aria-hidden="true"></div>
         <span class="signature-vertical">THE ART OF COPPER · BAKIR MUTFAK</span>
-        ${art({product_type:'tencere'},'hero-art')}
-        <div class="signature-stamp"><strong>BM</strong><span>SIGNATURE</span></div>
+        ${photo('hero','hero-photo',true)}
+        
         <div class="hero-footnote"><span>BAKIRIN ZAMANSIZ ESTETİĞİ</span><span>01 — 04</span></div>
       </div>
     </section>
@@ -73,7 +89,7 @@ function home(){
       <div class="discovery-grid">${discovery.map(discoveryCard).join('')}</div>
     </section>
     <section class="craft-stage" aria-label="Malzemenin karakteri">
-      <div class="craft-visual"><div class="craft-light"></div>${art({product_type:'sahan'},'craft-art')}<span class="craft-visual-label">COPPER / THE MATERIAL</span></div>
+      <div class="craft-visual"><div class="craft-light"></div>${photo('craft','craft-photo')}<span class="craft-visual-label">COPPER / THE MATERIAL</span></div>
       <div class="craft-copy"><span class="eyebrow">MALZEMENİN KARAKTERİ</span><h2>Yalnızca<br>parlaklığı değil.<br><em>Dokusu da.</em></h2>
         <p>Bakırın sıcak rengi, zamanla değişen yüzeyi ve geleneksel mutfak kültüründeki yeri; bir objeden fazlasını düşündürür.</p>
         <a class="underlink craft-link" href="#/story">Malzemeyi daha yakından tanı ↗</a>
@@ -96,7 +112,7 @@ function home(){
         <article><span class="principle-number">03 / BAKIM</span><span class="principle-icon">✳</span><h3>Uzun ömür</h3><p>Ürüne uygun bakım, nazik temizlik ve doğru saklama bakır eşyanın görünümünü korumaya yardımcı olur.</p></article>
       </div>
     </section>
-    <section class="signature-finale"><div class="signature-finale-inner"><span class="eyebrow">ATÖLYEDEN SOFRAYA</span><h2>Günlük hayatın<br><em>kalıcı parçaları.</em></h2><p>Bakır Mutfak koleksiyonlarını keşfedin ve sofranıza yakışan parçayı bulun.</p><a href="#/catalog" class="btn light">Tüm koleksiyonlar ↗</a></div><div class="finale-ornament" aria-hidden="true">✳</div></section>
+    <section class="signature-finale"><div class="signature-finale-inner"><span class="eyebrow">ATÖLYEDEN SOFRAYA</span><h2>Günlük hayatın<br><em>kalıcı parçaları.</em></h2><p>Bakır Mutfak koleksiyonlarını keşfedin ve sofranıza yakışan parçayı bulun.</p><a href="#/catalog" class="btn light">Tüm koleksiyonlar ↗</a></div>${photo('finale','finale-photo')}</section>
   `;
 }
 const filter=()=>{const out=products.filter(p=>(category==='all'||p.category===category)&&(!term||[p.name,p.sku,p.subtitle,p.description].join(' ').toLocaleLowerCase('tr').includes(term.toLocaleLowerCase('tr')))&&(!inStock||p.stock>0)&&(!handmade||p.handmade)&&(!tinned||p.tinned));
@@ -114,7 +130,7 @@ return '<div class="container"><div class="breadcrumbs"><a href="#/">Ana sayfa</
 function storyPage(){
   return `<div class="journal-hero"><div class="container"><span class="eyebrow">BAKIR MUTFAK / JOURNAL 001</span><h1>Bir malzemenin<br><em>hikâyesi.</em></h1><p>Bakırın hayatımızdaki yeri, kullanım alanları ve zamansız estetiği üzerine kısa bir yolculuk.</p></div></div>
   <div class="container journal-grid"><div class="journal-aside"><span>01 — MALZEMEYİ TANIYIN</span><strong>Cu</strong><small>Bakır / Copper</small></div><div class="journal-copy"><span class="eyebrow">ZAMANSIZ BİR MALZEME</span><h2>Bakırın<br>kendine özgü dili.</h2><p>Bakır; sıcak tonları, ışığı yansıtma biçimi ve şekil verilebilir yapısıyla uzun zamandır mutfak ve dekoratif eşyalarda kullanılan bir metaldir. Ürünün nerede ve nasıl kullanılacağını değerlendirirken malzeme, iç kaplama ve üreticinin bakım bilgisini birlikte incelemek önemlidir.</p><div class="journal-rule"></div><h3>Doğru ürünü seçmek</h3><p>Bir bakır ürün yalnızca biçimiyle değil; ölçüsü, kalınlığı, yüzey işlemi ve kullanım amacına uygunluğu ile değerlendirilmelidir. Özellikle gıdayla temas eden ürünlerde kullanım talimatlarına dikkat edilmelidir.</p><a class="btn dark" href="#/catalog">Koleksiyonlara dön ↗</a></div></div>
-  <section class="journal-banner"><span>BAKIR MUTFAK · THE COPPER JOURNAL</span><div class="journal-ring"></div><strong>Günlük yaşamın<br><em>küçük ritüelleri.</em></strong></section>
+  <section class="journal-banner"><span>BAKIR MUTFAK · THE COPPER JOURNAL</span>${photo('journal','journal-photo')}<div class="journal-ring"></div><strong>Günlük yaşamın<br><em>küçük ritüelleri.</em></strong></section>
   <div class="container journal-note"><h2>Gerçek atölye hikâyeleri geliyor.</h2><p>Tedarikçiler ve üreticilerle ilgili doğrulanmış bilgiler geldikçe burada özgün üretim fotoğraflarına ve ustalık hikâyelerine yer vereceğiz. Şimdilik herhangi bir ürünün el yapımı olduğuna dair doğrulanmamış iddia sunmuyoruz.</p></div>`;
 }
 
