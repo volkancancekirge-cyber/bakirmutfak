@@ -35,3 +35,16 @@ test('admin screen remains a login gate',async({page})=>{
  await expect(page.locator('#login-form')).toBeVisible();
  await expect(page.locator('.app-shell')).toHaveCount(0);
 });
+
+test('editorial photography loads successfully in Chromium',async({page})=>{
+ await page.setViewportSize({width:1366,height:900});
+ await page.goto('/');
+ const hero=page.locator('.hero-photo');
+ await expect(hero).toBeVisible();
+ await hero.evaluate(img=>new Promise(resolve=>{
+   if(img.complete)resolve();
+   else{img.addEventListener('load',resolve,{once:true});img.addEventListener('error',resolve,{once:true});}
+ }));
+ const width=await hero.evaluate(img=>img.naturalWidth);
+ expect(width,'Hero photo CDN should return real image bytes').toBeGreaterThan(0);
+});
