@@ -5,3 +5,20 @@
 
 .backlink-register{display:block;font-size:13px;color:#9c6544;font-weight:700;margin-bottom:14px;text-decoration:underline;text-underline-offset:5px}
 .login-card .info-note{font-size:12px;line-height:1.7;margin:22px 0}
+
+/* Bakır Mutfak product editor */
+.form-block{display:block;font-size:12px;font-weight:700;margin-top:20px}
+.form-block textarea,.form-block input{width:100%;border:1px solid #dcd8d0;padding:12px;border-radius:6px;margin-top:10px;background:#fff;line-height:1.6;color:#292b27}
+.form-checks{display:flex;align-items:center;gap:25px;margin-top:15px;flex-wrap:wrap}
+.form-checks label{font-size:13px;color:#5f5c54}
+.form-checks input{accent-color:#a46e50;margin-right:7px}
+.upload-panel{background:#faf8f5;border:1px solid #e6ded6;padding:20px;border-radius:9px;margin-top:28px}
+.upload-panel h3{font:500 23px Georgia,serif;margin:0}
+.upload-panel p{font-size:12px;color:#7a766e}
+.upload-panel .form-block{margin-top:18px}
+.image-preview{display:flex;gap:12px;flex-wrap:wrap;padding-top:12px}
+.image-preview img{height:95px;width:95px;object-fit:cover;border:1px solid #e2d7ca;border-radius:5px;background:#eee}
+.editor-actions{display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-top:25px}
+.edit-button{padding:9px 13px!important;white-space:nowrap}
+.sample-download{display:inline-block;margin-top:9px}
+.new-form{scroll-margin-top:18px}

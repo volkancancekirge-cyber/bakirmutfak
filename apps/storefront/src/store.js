@@ -68,4 +68,9 @@ $('#search-toggle').onclick=()=>{$('#search-section').hidden=!$('#search-section
 $('#quick-search').addEventListener('keydown',e=>{if(e.key==='Enter'){term=e.target.value.trim();location.hash='/catalog';render();$('#search-section').hidden=true}});
 window.addEventListener('hashchange',()=>{showCart(false);$('#mobile-links').hidden=true;render()});
 render();
-if(configured)publishedProducts().then(rows=>{products=(rows||[]).map(x=>({...x,price:Number(x.price),stock:Number(x.stock),image_urls:x.image_urls||[]}));basket={};localStorage.removeItem('bakirmutfak-basket');render()}).catch(e=>{$('#app').insertAdjacentHTML('afterbegin','<div class="error-banner">Ürün verileri yüklenemedi: '+escapeHTML(e.message)+'</div>')});
+if(configured)publishedProducts().then(rows=>{products=(rows||[]).map(x=>({...x,price:Number(x.price),stock:Number(x.stock),image_urls:x.image_urls||[]}));for(const sku of Object.keys(basket)){
+ const p=products.find(x=>x.sku===sku);
+ if(!p||p.stock<=0)delete basket[sku];
+ else basket[sku]=Math.min(p.stock,Math.max(0,Math.floor(Number(basket[sku])||0)));
+}
+localStorage.setItem('bakirmutfak-basket',JSON.stringify(basket));render()}).catch(e=>{$('#app').insertAdjacentHTML('afterbegin','<div class="error-banner">Ürün verileri yüklenemedi: '+escapeHTML(e.message)+'</div>')});

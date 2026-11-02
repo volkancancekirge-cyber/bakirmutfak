@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- SADECE GELIŞTIRME VE ON IZLEME ICIN. Gercek urun veya fiyat degildir. -->
+<Urunler>
+  <Urun>
+    <StokKodu>DEMO-XML-CEZ-001</StokKodu>
+    <UrunAdi>Örnek Bakır Cezve</UrunAdi>
+    <SatisFiyati>1250,00</SatisFiyati>
+    <StokAdedi>4</StokAdedi>
+    <Aciklama>TEST VERİSİ - GERÇEK ÜRÜN DEĞİLDİR.</Aciklama>
+  </Urun>
+  <Urun>
+    <StokKodu>DEMO-XML-TEN-002</StokKodu>
+    <UrunAdi>Örnek Bakır Tencere</UrunAdi>
+    <SatisFiyati>2450,50</SatisFiyati>
+    <StokAdedi>2</StokAdedi>
+    <Aciklama>TEST VERİSİ - GERÇEK ÜRÜN DEĞİLDİR.</Aciklama>
+  </Urun>
+</Urunler>

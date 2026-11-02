@@ -19,6 +19,9 @@ jobs:
       - name: Syntax verification
         working-directory: apps/storefront
         run: npm run check
+      - name: Product editor unit tests
+        working-directory: apps/storefront
+        run: npm test
       - name: Build storefront + admin
         working-directory: apps/storefront
         run: npm run build
@@ -26,5 +29,5 @@ jobs:
         run: |
           test -s apps/storefront/dist/index.html
           test -s apps/storefront/dist/admin.html
-          test -s apps/storefront/dist/register.html
+          test ! -e apps/storefront/dist/register.html
           test -d apps/storefront/dist/assets
