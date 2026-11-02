@@ -25,6 +25,8 @@ jobs:
           deno-version: v2.x
       - name: Check approved supplier photo importer
         run: deno check supabase/functions/approved-photo-import/index.ts
+      - name: Check full-source catalogue importer
+        run: deno check supabase/functions/approved-catalog-bulk/index.ts
       - name: Install dependencies
         working-directory: apps/storefront
         run: npm install --no-audit --no-fund
@@ -37,6 +39,9 @@ jobs:
       - name: Photo importer frontend syntax
         working-directory: apps/storefront
         run: node --check src/photo-review.js
+      - name: Bulk importer frontend syntax
+        working-directory: apps/storefront
+        run: node --check src/bulk-import.js
       - name: Build storefront + admin
         working-directory: apps/storefront
         run: npm run build
