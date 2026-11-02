@@ -1,0 +1,34 @@
+name: Signature Theme Integration
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  syntax:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: bagisto/bagisto
+          ref: 2021548672bbece5caf39bded96b90cabacfd973
+          path: upstream
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+      - run: php tools/install-theme.php upstream
+      - name: Verify config and Blade files
+        run: |
+          php -l upstream/config/themes.php
+          php -l upstream/resources/themes/bakirmutfak/views/home/index.blade.php
+          php -l upstream/resources/themes/bakirmutfak/views/categories/view.blade.php
+          php -l upstream/resources/themes/bakirmutfak/views/products/view.blade.php
+          php -l upstream/resources/themes/bakirmutfak/views/components/layouts/index.blade.php
+          test -s upstream/public/bakirmutfak/signature.css
+      - name: Ensure patch is repeatable
+        run: |
+          php tools/install-theme.php upstream
+          test "$(grep -c "'bakirmutfak' =>" upstream/config/themes.php)" = 1

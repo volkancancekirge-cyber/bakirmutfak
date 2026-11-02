@@ -1,0 +1,55 @@
+/* Bakır Mutfak Signature theme overlay for Bagisto 2.5. Keep checkout logic original. */
+:root{--bm-dark:#252620;--bm-copper:#ad7354;--bm-cream:#f3f0e9}
+.bm-signature{color:var(--bm-dark);-webkit-font-smoothing:antialiased}
+.bm-signature #main{background:white}
+.bm-announcement{background:#22231f;color:#f4e9dc;min-height:35px;display:flex;gap:20px;align-items:center;justify-content:center;letter-spacing:.17em;font-size:10px;padding:7px 12px}
+.bm-announcement span{color:#c18b6b}.bm-announcement a{color:#e8b993;text-decoration:underline;text-underline-offset:4px}
+.bm-container{max-width:1360px;width:calc(100% - 64px);margin-inline:auto}
+.bm-eyebrow{display:block;font-size:11px;font-weight:700;letter-spacing:.2em;color:var(--bm-copper)}
+.bm-hero{display:grid;grid-template-columns:51% 49%;min-height:590px;background:#efede6;overflow:hidden}
+.bm-hero-copy{padding:clamp(50px,7vw,115px) clamp(24px,5vw,90px);display:flex;flex-direction:column;justify-content:center}
+.bm-hero h1,.bm-section h2,.bm-manifesto h2,.bm-intro h1{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:-.06em}
+.bm-hero h1{font-size:clamp(48px,5.3vw,84px);line-height:1.11;margin:24px 0}
+.bm-hero h1 em,.bm-manifesto h2 em{font-style:italic;color:#a57050}
+.bm-hero p{max-width:465px;font-size:14px;line-height:1.85;color:#625e56}
+.bm-hero-actions{display:flex;gap:22px;align-items:center;flex-wrap:wrap;margin:31px 0 70px}
+.bm-button{background:#252721;color:#fff;min-height:49px;display:inline-flex;align-items:center;gap:24px;padding:14px 24px;text-decoration:none;font-weight:650;font-size:12px;transition:background .2s}
+.bm-button:hover{background:#865438}
+.bm-text-link{color:#2b2924;text-decoration:none;border-bottom:1px solid #b8845e;font-size:12px;font-weight:700;padding-bottom:5px}
+.bm-hero-copy>small{font-size:10px;letter-spacing:.14em;color:#9a8e7d}
+.bm-hero-stage{position:relative;overflow:hidden;min-height:500px;background:radial-gradient(ellipse at 51% 30%,#d8b290 0%,#b77955 41%,#774d3c 80%,#4a3934 100%)}
+.bm-platter{position:absolute;bottom:12%;left:8%;width:86%;height:21%;border-radius:50%;transform:rotate(-9deg);background:radial-gradient(ellipse at 45% 30%,#f0c79d,#ac603c 47%,#613827 73%,#ce9267 81%,#4a2d28 98%);box-shadow:0 26px 24px #2b1b1850}
+.bm-pot{position:absolute;left:28%;top:18%;width:48%;height:59%;filter:drop-shadow(18px 24px 13px #4a2c2488);transform:rotate(-7deg)}
+.bm-pot-body{position:absolute;left:4%;top:24%;width:80%;height:65%;border-radius:12% 12% 46% 46%;background:linear-gradient(90deg,#6a382b,#b46e47 21%,#efbf8b 43%,#b16744 70%,#5e352e);border-top:7px solid #eac095;box-shadow:inset 12px 0 14px #f9dda04a}
+.bm-pot-lid{position:absolute;z-index:2;top:18%;left:1%;width:88%;height:15%;border-radius:50%;background:linear-gradient(#ecc197,#995339,#70402e);box-shadow:0 6px 4px #532f25a6}
+.bm-pot-knob{position:absolute;z-index:3;top:8%;left:40%;width:16%;height:16%;border-radius:40% 40% 15% 15%;background:linear-gradient(90deg,#713c2b,#e1a879,#8c472e)}
+.bm-pot-handle{position:absolute;top:38%;right:-12%;height:40%;width:44%;border:15px solid #9b5a41;border-left:0;border-radius:0 55% 55% 0}
+.bm-stage-sign{position:absolute;bottom:28px;right:29px;color:#f2dfcd;letter-spacing:.17em;font-size:10px}
+.bm-trust{background:#252721;min-height:59px;color:#f7f0e5;display:flex;align-items:center;justify-content:center;gap:clamp(18px,5vw,85px);font-size:10px;letter-spacing:.1em;padding:15px;flex-wrap:wrap}
+.bm-section{padding-block:100px 45px}
+.bm-section-head{display:flex;align-items:end;justify-content:space-between;gap:25px;margin-bottom:35px}
+.bm-section h2{font-size:clamp(36px,4vw,62px);line-height:1.13;margin-top:10px}
+.bm-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+.bm-tile{display:flex;flex-direction:column;min-height:390px;padding:26px;color:#29241f;text-decoration:none;overflow:hidden}
+.bm-tile-coffee{background:#eaded0}.bm-tile-tea{background:#ddd8cd}.bm-tile-cook{background:#e9e6e0}
+.bm-tile>span{font-size:10px;letter-spacing:.13em;font-weight:700}
+.bm-tile-art{display:block;position:relative;height:235px;width:70%;margin:auto;filter:drop-shadow(14px 19px 10px #563c3155)}
+.bm-tile-art::before{content:"";position:absolute;bottom:9%;left:12%;height:66%;width:72%;border-radius:12% 12% 42% 42%;background:linear-gradient(95deg,#713d2d,#c98458 31%,#efbf8d 49%,#995137 76%,#5e342c)}
+.bm-tile-art::after{content:"";position:absolute;top:36%;right:1%;height:33%;width:36%;border:11px solid #a56245;border-left:0;border-radius:0 55% 55% 0}
+.bm-coffee::before{clip-path:polygon(17% 0,90% 0,72% 100%,30% 100%)}.bm-coffee::after{height:11px;width:55%;top:28%;left:-21%;border:0;border-radius:5px;background:#874a34;transform:rotate(-14deg)}
+.bm-cook::before{height:40%;bottom:10%}.bm-cook::after{height:12px;width:60%;top:56%;left:84%;border:0;background:#884930}
+.bm-tile strong{font:400 clamp(23px,2.6vw,33px) Georgia,serif;letter-spacing:-.04em}
+.bm-tile small{color:#6a6259;font-size:12px;margin-top:7px}
+.bm-real-products{padding-top:50px}
+.bm-manifesto{background:#292a25;color:#f7ecdc;padding:105px 0;text-align:center}
+.bm-manifesto h2{font-size:clamp(41px,5vw,73px);margin:26px 0}
+.bm-manifesto p{color:#dfd3c2;font-size:14px;margin:0 auto 25px}
+.bm-manifesto a{color:#e6b18b;text-decoration:underline;text-underline-offset:5px;font-weight:600}
+.bm-intro{background:#f5f2ec;margin-top:28px;margin-bottom:30px;padding:50px 35px}
+.bm-intro h1{font-size:clamp(42px,5vw,70px);margin:12px 0}.bm-intro p{color:#686158;font-size:14px}
+.bm-product-intro{padding:26px 0 16px;border-bottom:1px solid #e8dfd4}
+.bm-product-intro p{font:400 20px Georgia,serif;margin:9px 0}
+.bm-signature a:focus-visible,.bm-signature button:focus-visible{outline:3px solid #b17853;outline-offset:3px}
+@media(max-width:1000px){.bm-hero{grid-template-columns:1fr}.bm-hero-copy{padding:60px 7vw}.bm-hero-stage{min-height:440px}.bm-hero-actions{margin-bottom:35px}.bm-tile{min-height:310px;padding:20px}.bm-tile-art{height:165px}}
+@media(max-width:650px){.bm-container{width:calc(100% - 30px)}.bm-hero h1{font-size:clamp(43px,12vw,65px)}.bm-hero-stage{min-height:320px}.bm-hero-copy{padding:45px 23px}.bm-trust{gap:12px;font-size:9px}.bm-trust span:last-child{display:none}.bm-grid{grid-template-columns:1fr}.bm-section{padding-block:58px 24px}.bm-section h2{font-size:37px}.bm-tile{min-height:300px}.bm-tile-art{height:165px;width:55%}.bm-section-head>a{font-size:10px;white-space:nowrap}.bm-manifesto{padding:60px 0}.bm-intro{padding:35px 20px;margin-top:13px}.bm-intro h1{font-size:43px}}
+@media(prefers-reduced-motion:reduce){.bm-button{transition:none}}
