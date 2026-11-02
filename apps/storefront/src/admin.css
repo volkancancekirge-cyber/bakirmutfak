@@ -84,3 +84,46 @@
  .workspace-header h1{font-size:29px}
  .source-main{flex-direction:column;align-items:start}
 }
+
+
+/* Approved source product images: inspection before import; no storefront publishing */
+.photo-review-panel{margin-top:22px}
+.photo-source-examples{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 22px}
+.photo-source-examples .outline{border-radius:8px;background:#faf7f2}
+.photo-import-form>label{display:block;font-size:12px;font-weight:700;color:#5d574e;margin-bottom:10px}
+.photo-import-row{display:grid;grid-template-columns:1fr auto;gap:10px}
+.photo-import-row input{border:1px solid #d9d1c6;border-radius:8px;padding:14px;min-width:0;background:#fff;color:#2b2a27}
+.photo-import-row button{white-space:nowrap}
+#photo-preview{margin:25px 0 33px}
+#photo-preview:empty{display:none}
+#photo-preview>h3{font:500 24px Georgia,serif;margin:0 0 7px}
+#photo-preview>p{color:#716a61;font-size:12px}
+.photo-preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin:20px 0}
+.photo-preview-item{display:flex;flex-direction:column;gap:7px;border:1px solid #e2d8cd;border-radius:10px;padding:9px;background:#fcfaf6;font-size:12px;font-weight:700;color:#534f46;cursor:pointer}
+.photo-preview-item img{width:100%;height:175px;object-fit:contain;background:#f4efe7;border-radius:7px}
+.photo-preview-item input{width:18px;height:18px;accent-color:#a06b4b}
+.photo-gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:15px}
+.photo-candidate{background:#fdfcf9;border:1px solid #e5dbce;border-radius:12px;overflow:hidden}
+.photo-candidate-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;background:#eae1d8;padding:4px}
+.photo-candidate-grid img{width:100%;aspect-ratio:1.25;object-fit:contain;background:#f5f0e8}
+.photo-candidate-grid img:only-child{grid-column:1/-1;max-height:300px}
+.photo-candidate-info{padding:17px}
+.photo-candidate-info h3{font:500 21px Georgia,serif;line-height:1.3;margin:8px 0}
+.photo-candidate-info p{font-size:12px;color:#796e62}
+.photo-candidate-info>a{display:inline-block;font-size:12px;color:#8a5b40;text-decoration:underline;text-underline-offset:3px;margin:6px 0 12px}
+.photo-candidate-info label{display:block;font-size:12px;font-weight:700}
+.photo-candidate-info select{display:block;width:100%;border:1px solid #d9cfc3;background:white;padding:10px;border-radius:6px;margin:9px 0}
+.photo-candidate-info small{display:block;color:#857b71}
+@media(max-width:650px){
+ .photo-import-row{grid-template-columns:1fr}
+ .photo-import-row button{width:100%}
+ .photo-source-examples{display:grid;grid-template-columns:1fr}
+ .photo-source-examples button{width:100%;text-align:left}
+ .photo-preview-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .photo-preview-item img{height:130px}
+ .photo-gallery{grid-template-columns:1fr}
+}
+@media(max-width:350px){
+ .photo-preview-grid{grid-template-columns:1fr}
+ .photo-preview-item img{height:210px}
+}
