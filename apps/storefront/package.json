@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check": "node --check src/store.js && node --check src/admin.js && node --check src/supabase.js && node --check src/xml.js && node --check src/register.js && node --check src/product-editor.js && node --check src/product-utils.js",
+    "check": "node --check src/store.js && node --check src/admin.js && node --check src/supabase.js && node --check src/xml.js && node --check src/register.js && node --check src/product-editor.js && node --check src/product-utils.js && node --check src/photo-review.js",
     "test": "node --test tests/*.test.js",
     "test:mobile": "playwright test --config=playwright.config.js"
   },

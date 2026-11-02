@@ -28,6 +28,9 @@ jobs:
       - name: Product editor unit tests
         working-directory: apps/storefront
         run: npm test
+      - name: Photo importer frontend syntax
+        working-directory: apps/storefront
+        run: node --check src/photo-review.js
       - name: Build storefront + admin
         working-directory: apps/storefront
         run: npm run build
