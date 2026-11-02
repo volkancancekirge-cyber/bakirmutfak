@@ -1,0 +1,21 @@
+name: Approved supplier feed preview bot
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Offline feed parser and network-safety tests
+        run: python -m unittest discover -s tools/tests -p 'test_supplier_preview.py' -v
+      - name: Read-only approved supplier preview
+        env:
+          APPROVED_SUPPLIER_FEED_URL: ${{ secrets.APPROVED_SUPPLIER_FEED_URL \}\}
+          APPROVED_SUPPLIER_HOST: ${{ secrets.APPROVED_SUPPLIER_HOST \}\}
+        run: python tools/supplier_preview_bot.py
