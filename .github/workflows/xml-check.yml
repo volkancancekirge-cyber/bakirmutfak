@@ -1,0 +1,38 @@
+name: XML Import Safety
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  xml:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: xml, xmlreader, simplexml, mbstring, iconv
+          coverage: none
+      - name: PHP syntax
+        run: php -l tools/xml-to-bagisto.php
+      - name: Dry run does not write products
+        run: |
+          php tools/xml-to-bagisto.php fixtures/ornek-urunler.xml /tmp/products.csv config/tedarikci-ornek.json --dry-run | tee /tmp/preview.json
+          test ! -e /tmp/products.csv
+          php -r '$j=json_decode(file_get_contents("/tmp/preview.json"),true); exit(($j["valid"]===2 && $j["invalid"]===0)?0:1);'
+      - name: Export valid CSV and check fields
+        run: |
+          php tools/xml-to-bagisto.php fixtures/ornek-urunler.xml /tmp/products.csv config/tedarikci-ornek.json
+          php -r '$f=fopen("/tmp/products.csv","r");$h=fgetcsv($f);$a=array_combine($h,fgetcsv($f));$b=array_combine($h,fgetcsv($f));exit(($a["price"]==="1299.90"&&$a["inventories"]==="default=12"&&$b["price"]==="2450.00"&&$b["status"]==="0"&&str_contains($a["images"],"https://"))?0:1);'
+      - name: Reject unsafe feeds atomically
+        run: |
+          for name in hatali tekrar-sku xxe; do
+            rm -f /tmp/blocked.csv
+            if php tools/xml-to-bagisto.php "fixtures/$name.xml" /tmp/blocked.csv config/tedarikci-ornek.json; then
+              echo "Unsafe feed accepted: $name"; exit 1
+            fi
+            test ! -f /tmp/blocked.csv
+          done

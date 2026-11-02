@@ -1,0 +1,37 @@
+{
+  "item_tag": "Urun",
+  "fields": {
+    "sku": [
+      "StokKodu",
+      "@sku"
+    ],
+    "name": [
+      "UrunAdi",
+      "Ad"
+    ],
+    "price": [
+      "SatisFiyati",
+      "Fiyat"
+    ],
+    "stock": [
+      "StokAdedi",
+      "Stok"
+    ],
+    "description": [
+      "Aciklama"
+    ],
+    "images": [
+      "Gorseller.Gorsel",
+      "Resim1",
+      "Resim2"
+    ]
+  },
+  "defaults": {
+    "locale": "tr",
+    "channel": "default",
+    "attribute_family_code": "default",
+    "inventory_source": "default",
+    "weight": "0.5",
+    "publish": false
+  }
+}

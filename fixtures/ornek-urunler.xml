@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Urunler><Urun><StokKodu>BM-100</StokKodu><UrunAdi>El Dövmesi Bakır Cezve</UrunAdi><SatisFiyati>1.299,90</SatisFiyati><StokAdedi>12</StokAdedi><Aciklama>3 fincanlık &amp; kalaylı iç yüzey</Aciklama><Gorseller><Gorsel>https://example.org/cezve-1.jpg</Gorsel><Gorsel>https://example.org/cezve-2.jpg</Gorsel></Gorseller></Urun><Urun sku="BM-200"><Ad>Bakır Çaydanlık</Ad><Fiyat>2.450,00</Fiyat><Stok>0</Stok><Resim1>https://example.org/caydanlik.jpg</Resim1></Urun></Urunler>

