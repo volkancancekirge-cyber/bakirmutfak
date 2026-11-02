@@ -5,7 +5,8 @@ const root = dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
  build: { rollupOptions: { input: {
  main: resolve(root, 'index.html'),
- admin: resolve(root, 'admin.html')
+ admin: resolve(root, 'admin.html'),
+ register: resolve(root, 'register.html')
  } } },
  server: { port: 5173 }
 });

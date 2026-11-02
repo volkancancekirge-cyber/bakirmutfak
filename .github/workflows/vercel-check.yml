@@ -26,4 +26,5 @@ jobs:
         run: |
           test -s apps/storefront/dist/index.html
           test -s apps/storefront/dist/admin.html
+          test -s apps/storefront/dist/register.html
           test -d apps/storefront/dist/assets
