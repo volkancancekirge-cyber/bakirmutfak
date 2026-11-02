@@ -31,23 +31,23 @@ const discovery=[
   {category:'sofra',number:'04',tag:'SUNUMUN SANATI',name:'Sofra & Sunum',copy:'Küçük detayların büyük etkisi.',shape:'tepsi'}
 ];
 function discoveryCard(d){
-  return \`<a href="#/catalog/\${d.category}" class="discovery-card discovery-\${d.category}" aria-label="\${d.name} koleksiyonunu aç">
-    <div class="discovery-top"><span>\${d.number} / \${d.tag}</span><span aria-hidden="true">↗</span></div>
-    \${art({product_type:d.shape},'discovery-art')}
-    <div class="discovery-bottom"><div><h3>\${d.name}</h3><p>\${d.copy}</p></div><span class="discovery-arrow" aria-hidden="true">↗</span></div>
-  </a>\`;
+  return `<a href="#/catalog/${d.category}" class="discovery-card discovery-${d.category}" aria-label="${d.name} koleksiyonunu aç">
+    <div class="discovery-top"><span>${d.number} / ${d.tag}</span><span aria-hidden="true">↗</span></div>
+    ${art({product_type:d.shape},'discovery-art')}
+    <div class="discovery-bottom"><div><h3>${d.name}</h3><p>${d.copy}</p></div><span class="discovery-arrow" aria-hidden="true">↗</span></div>
+  </a>`;
 }
 function exploreCard(d){
- return \`<a class="explore-card" href="#/catalog/\${d.category}">
-    <span class="explore-number">\${d.number} / KOLEKSİYON REHBERİ</span>
-    \${art({product_type:d.shape},'explore-art')}
-    <div class="explore-bottom"><h3>\${d.name}</h3><span>Keşfet ↗</span></div>
-  </a>\`;
+ return `<a class="explore-card" href="#/catalog/${d.category}">
+    <span class="explore-number">${d.number} / KOLEKSİYON REHBERİ</span>
+    ${art({product_type:d.shape},'explore-art')}
+    <div class="explore-bottom"><h3>${d.name}</h3><span>Keşfet ↗</span></div>
+  </a>`;
 }
 function home(){
   const recommendations=products.length ? products.slice(0,4).map(card).join('') : '';
   const more=products.length<4?discovery.slice(0,4-products.length).map(exploreCard).join(''):'';
-  return \`
+  return `
     <section class="hero signature-hero" aria-label="Bakır Mutfak Signature">
       <div class="hero-info">
         <span class="eyebrow"><span class="tiny-diamond" aria-hidden="true">✦</span> BAKIR MUTFAK — SIGNATURE / 2026</span>
@@ -59,7 +59,7 @@ function home(){
       <div class="hero-visual signature-visual">
         <div class="hero-halo"></div><div class="signature-orbit" aria-hidden="true"></div>
         <span class="signature-vertical">THE ART OF COPPER · BAKIR MUTFAK</span>
-        \${art({product_type:'tencere'},'hero-art')}
+        ${art({product_type:'tencere'},'hero-art')}
         <div class="signature-stamp"><strong>BM</strong><span>SIGNATURE</span></div>
         <div class="hero-footnote"><span>BAKIRIN ZAMANSIZ ESTETİĞİ</span><span>01 — 04</span></div>
       </div>
@@ -69,11 +69,11 @@ function home(){
       <div><h2>Bir malzeme. <em>Bin hikâye.</em></h2><p>Bakırın karakterini öne çıkaran sade formlar, sıcak tonlar ve gündelik hayatın ritüelleri. Her koleksiyonu kendi hikâyesiyle keşfedin.</p></div>
     </section>
     <section class="container section signature-collections" id="koleksiyonlar">
-      \${sections('KOLEKSİYONLAR / 01—04','Bakırın dört farklı<br><em>yorumu.</em>','Tüm ürünleri gör','#/catalog')}
-      <div class="discovery-grid">\${discovery.map(discoveryCard).join('')}</div>
+      ${sections('KOLEKSİYONLAR / 01—04','Bakırın dört farklı<br><em>yorumu.</em>','Tüm ürünleri gör','#/catalog')}
+      <div class="discovery-grid">${discovery.map(discoveryCard).join('')}</div>
     </section>
     <section class="craft-stage" aria-label="Malzemenin karakteri">
-      <div class="craft-visual"><div class="craft-light"></div>\${art({product_type:'sahan'},'craft-art')}<span class="craft-visual-label">COPPER / THE MATERIAL</span></div>
+      <div class="craft-visual"><div class="craft-light"></div>${art({product_type:'sahan'},'craft-art')}<span class="craft-visual-label">COPPER / THE MATERIAL</span></div>
       <div class="craft-copy"><span class="eyebrow">MALZEMENİN KARAKTERİ</span><h2>Yalnızca<br>parlaklığı değil.<br><em>Dokusu da.</em></h2>
         <p>Bakırın sıcak rengi, zamanla değişen yüzeyi ve geleneksel mutfak kültüründeki yeri; bir objeden fazlasını düşündürür.</p>
         <a class="underlink craft-link" href="#/story">Malzemeyi daha yakından tanı ↗</a>
@@ -82,10 +82,10 @@ function home(){
     </section>
     <section class="section featured-signature">
       <div class="container">
-        \${sections('MAĞAZADAN SEÇKİLER','Sofranın yeni<br><em>favorileri.</em>','Kataloğu incele','#/catalog')}
-        <div class="featured-intro"><span>Yayımlanan ürünleri ve koleksiyon keşiflerini bir arada görün.</span><span>\${products.length} YAYIMLANMIŞ ÜRÜN</span></div>
-        <div class="product-grid signature-products">\${recommendations}\${more}</div>
-        \${products.length<4?'<p class="collection-disclaimer">Koleksiyon kartları ürün ilanı değildir; ürün ve fiyat bilgileri eklendikçe gerçek ürünlerle yer değiştirecek.</p>':''}
+        ${sections('MAĞAZADAN SEÇKİLER','Sofranın yeni<br><em>favorileri.</em>','Kataloğu incele','#/catalog')}
+        <div class="featured-intro"><span>Yayımlanan ürünleri ve koleksiyon keşiflerini bir arada görün.</span><span>${products.length} YAYIMLANMIŞ ÜRÜN</span></div>
+        <div class="product-grid signature-products">${recommendations}${more}</div>
+        ${products.length<4?'<p class="collection-disclaimer">Koleksiyon kartları ürün ilanı değildir; ürün ve fiyat bilgileri eklendikçe gerçek ürünlerle yer değiştirecek.</p>':''}
       </div>
     </section>
     <section class="principles container section" aria-labelledby="principles-title">
@@ -97,7 +97,7 @@ function home(){
       </div>
     </section>
     <section class="signature-finale"><div class="signature-finale-inner"><span class="eyebrow">ATÖLYEDEN SOFRAYA</span><h2>Günlük hayatın<br><em>kalıcı parçaları.</em></h2><p>Bakır Mutfak koleksiyonlarını keşfedin ve sofranıza yakışan parçayı bulun.</p><a href="#/catalog" class="btn light">Tüm koleksiyonlar ↗</a></div><div class="finale-ornament" aria-hidden="true">✳</div></section>
-  \`;
+  `;
 }
 const filter=()=>{const out=products.filter(p=>(category==='all'||p.category===category)&&(!term||[p.name,p.sku,p.subtitle,p.description].join(' ').toLocaleLowerCase('tr').includes(term.toLocaleLowerCase('tr')))&&(!inStock||p.stock>0)&&(!handmade||p.handmade)&&(!tinned||p.tinned));
 if(sort==='low')out.sort((a,b)=>a.price-b.price);if(sort==='high')out.sort((a,b)=>b.price-a.price);return out};
@@ -112,10 +112,10 @@ return '<div class="container"><div class="breadcrumbs"><a href="#/">Ana sayfa</
 }
 
 function storyPage(){
-  return \`<div class="journal-hero"><div class="container"><span class="eyebrow">BAKIR MUTFAK / JOURNAL 001</span><h1>Bir malzemenin<br><em>hikâyesi.</em></h1><p>Bakırın hayatımızdaki yeri, kullanım alanları ve zamansız estetiği üzerine kısa bir yolculuk.</p></div></div>
+  return `<div class="journal-hero"><div class="container"><span class="eyebrow">BAKIR MUTFAK / JOURNAL 001</span><h1>Bir malzemenin<br><em>hikâyesi.</em></h1><p>Bakırın hayatımızdaki yeri, kullanım alanları ve zamansız estetiği üzerine kısa bir yolculuk.</p></div></div>
   <div class="container journal-grid"><div class="journal-aside"><span>01 — MALZEMEYİ TANIYIN</span><strong>Cu</strong><small>Bakır / Copper</small></div><div class="journal-copy"><span class="eyebrow">ZAMANSIZ BİR MALZEME</span><h2>Bakırın<br>kendine özgü dili.</h2><p>Bakır; sıcak tonları, ışığı yansıtma biçimi ve şekil verilebilir yapısıyla uzun zamandır mutfak ve dekoratif eşyalarda kullanılan bir metaldir. Ürünün nerede ve nasıl kullanılacağını değerlendirirken malzeme, iç kaplama ve üreticinin bakım bilgisini birlikte incelemek önemlidir.</p><div class="journal-rule"></div><h3>Doğru ürünü seçmek</h3><p>Bir bakır ürün yalnızca biçimiyle değil; ölçüsü, kalınlığı, yüzey işlemi ve kullanım amacına uygunluğu ile değerlendirilmelidir. Özellikle gıdayla temas eden ürünlerde kullanım talimatlarına dikkat edilmelidir.</p><a class="btn dark" href="#/catalog">Koleksiyonlara dön ↗</a></div></div>
   <section class="journal-banner"><span>BAKIR MUTFAK · THE COPPER JOURNAL</span><div class="journal-ring"></div><strong>Günlük yaşamın<br><em>küçük ritüelleri.</em></strong></section>
-  <div class="container journal-note"><h2>Gerçek atölye hikâyeleri geliyor.</h2><p>Tedarikçiler ve üreticilerle ilgili doğrulanmış bilgiler geldikçe burada özgün üretim fotoğraflarına ve ustalık hikâyelerine yer vereceğiz. Şimdilik herhangi bir ürünün el yapımı olduğuna dair doğrulanmamış iddia sunmuyoruz.</p></div>\`;
+  <div class="container journal-note"><h2>Gerçek atölye hikâyeleri geliyor.</h2><p>Tedarikçiler ve üreticilerle ilgili doğrulanmış bilgiler geldikçe burada özgün üretim fotoğraflarına ve ustalık hikâyelerine yer vereceğiz. Şimdilik herhangi bir ürünün el yapımı olduğuna dair doğrulanmamış iddia sunmuyoruz.</p></div>`;
 }
 
 function render(){
