@@ -191,3 +191,16 @@ export async function setImageCandidateReview(id,status) {
     body:JSON.stringify({review_status:status,updated_at:new Date().toISOString()})
   },true);
 }
+
+// Read-only storefront catalog, without sales price or checkout.
+export async function publicSourceCatalog() {
+  return fetchApi('/rest/v1/bm_source_catalog?select=id,source_url,source_host,supplier_sku,name,category,image_urls&visibility=eq.visible&order=created_at.desc&limit=1000');
+}
+export async function bulkCatalogAction(payload) {
+  return fetchApi('/functions/v1/approved-catalog-bulk',{
+    method:'POST',body:JSON.stringify(payload)
+  },true);
+}
+export async function bulkQueueStatus(){
+  return fetchApi('/rest/v1/bm_catalog_queue?select=source_host,status&order=created_at.asc&limit=5000',{},true);
+}
