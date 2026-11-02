@@ -13,11 +13,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: apps/storefront/package-lock.json
       - name: Install dependencies
         working-directory: apps/storefront
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: Syntax verification
         working-directory: apps/storefront
         run: npm run check
