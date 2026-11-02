@@ -32,6 +32,9 @@ jobs:
           php -l upstream/resources/themes/bakirmutfak/views/components/layouts/index.blade.php
           test -s upstream/public/bakirmutfak/signature.css
           test -s upstream/resources/views/bakirmutfak/xml-import.blade.php
+          test -s upstream/tools/bm-xml-to-bagisto.php
+          test -s upstream/config/bm-xml-mapping.json
+          php -l upstream/tools/bm-xml-to-bagisto.php
           grep -q 'BakirMutfakXmlServiceProvider::class' upstream/bootstrap/providers.php
       - name: Ensure patch is repeatable
         run: |

@@ -5,8 +5,6 @@ COPY theme/ /tmp/bakirmutfak/theme/
 COPY tools/install-theme.php /tmp/bakirmutfak/tools/install-theme.php
 COPY tools/xml-to-bagisto.php /usr/local/bin/bakirmutfak-xml.php
 COPY config/tedarikci-ornek.json /usr/local/share/bakirmutfak/mapping.json
-COPY tools/xml-to-bagisto.php /var/www/bagisto/tools/bm-xml-to-bagisto.php
-COPY config/tedarikci-ornek.json /var/www/bagisto/config/bm-xml-mapping.json
 RUN php /tmp/bakirmutfak/tools/install-theme.php /var/www/bagisto \
     && php -l /var/www/bagisto/config/themes.php \
     && php -l /var/www/bagisto/app/Providers/BakirMutfakXmlServiceProvider.php \

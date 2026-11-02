@@ -55,3 +55,17 @@ if (!str_contains($providers, 'BakirMutfakXmlServiceProvider::class')) {
         throw new RuntimeException('Unable to register BakirMutfakXmlServiceProvider');
     }
 }
+
+// Copy XML processor and the initial supplier mapping for non-Docker Bagisto installs.
+$companions = [
+    dirname(__DIR__).'/tools/xml-to-bagisto.php' => $target.'/tools/bm-xml-to-bagisto.php',
+    dirname(__DIR__).'/config/tedarikci-ornek.json' => $target.'/config/bm-xml-mapping.json',
+];
+foreach ($companions as $from => $to) {
+    if (!is_dir(dirname($to)) && !mkdir(dirname($to), 0755, true) && !is_dir(dirname($to))) {
+        throw new RuntimeException('Unable to create XML companion directory.');
+    }
+    if (!copy($from, $to)) {
+        throw new RuntimeException('Unable to install XML companion: '.basename($to));
+    }
+}
