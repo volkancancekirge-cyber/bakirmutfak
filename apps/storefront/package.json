@@ -8,10 +8,12 @@
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check": "node --check src/store.js && node --check src/admin.js && node --check src/supabase.js && node --check src/xml.js && node --check src/register.js && node --check src/product-editor.js && node --check src/product-utils.js",
-    "test": "node --test tests/*.test.js"
+    "test": "node --test tests/*.test.js",
+    "test:mobile": "playwright test --config=playwright.config.js"
   },
   "devDependencies": {
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "@playwright/test": "1.64.1"
   },
   "engines": {
     "node": ">=20.19.0"

@@ -1,0 +1,32 @@
+name: Mobile responsive browser tests
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Vite and Playwright
+        working-directory: apps/storefront
+        run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        working-directory: apps/storefront
+        run: npx playwright install --with-deps chromium
+      - name: Run five viewport and flow tests
+        working-directory: apps/storefront
+        run: npm run test:mobile
+      - name: Upload screenshots on test failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-smoke-screenshots
+          path: apps/storefront/test-results/
+          retention-days: 3
