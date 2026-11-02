@@ -127,3 +127,16 @@
  .photo-preview-grid{grid-template-columns:1fr}
  .photo-preview-item img{height:210px}
 }
+
+/* Fiyatsız ve sepetsiz tedarikçi kataloğu */
+.catalog-only-label{font-weight:700;color:#976747;font-size:12px;line-height:1.6}
+.product .catalog-only-label{display:inline-flex;align-items:center;min-height:36px}
+.bulk-import-panel{margin-top:24px;scroll-margin-top:24px}
+.bulk-import-panel .panel-head p{max-width:740px}
+.bulk-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0}
+.bulk-stat{display:flex;flex-direction:column;background:#f7f0e8;border:1px solid #dfcdbb;border-radius:10px;padding:21px}
+.bulk-stat b{font-size:13px}.bulk-stat strong{font:400 41px Georgia,serif;color:#956448;margin:11px 0}
+.bulk-stat span,.bulk-stat small{font-size:12px;color:#625e58;line-height:1.7}
+.bulk-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bulk-actions button{min-height:44px}
+@media(max-width:650px){.bulk-stats{grid-template-columns:1fr}.bulk-actions{display:grid;grid-template-columns:1fr}.bulk-actions button{width:100%}}
