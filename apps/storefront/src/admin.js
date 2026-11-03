@@ -116,7 +116,7 @@ function attachSourceActions(){
 
 function render(){
 if(!user){loginScreen();return;}
-const content=tab==='products'?productsView():tab==='xml'?xmlView():tab==='history'?historyView():tab==='sources'?sourceView():tab==='hydra'?'<section class="panel"><h2>Hydra vitrin yönetimi yükleniyor…</h2></section>':tab==='quotes'?'<section class="panel"><h2>Müşteri talepleri yükleniyor…</h2></section>':dashboard();
+const content=tab==='products'?productsView():tab==='xml'?xmlView():tab==='history'?historyView():tab==='sources'?sourceView():tab==='hydra'||tab==='quotes'?'':dashboard();
 shell(content);
 $('#logout').onclick=()=>{logout();user=null;preview=null;rememberTab('dashboard',false);loginScreen()};
 document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>goToTab(btn.dataset.tab)));

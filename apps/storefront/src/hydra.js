@@ -14,6 +14,28 @@ const groups = [
   {id:'sofra',name:'Diğer bakır ürünler',headline:'Keşfedilecek daha çok şey',sub:'Özel koleksiyonlar ve tamamlayıcılar',photo:'17205592'}
 ];
 const groupById = Object.fromEntries(groups.map(x=>[x.id,x]));
+// Every storefront category surface follows the same saved Hydra merchandising order.
+// "Tüm ürünler" stays first; unchecked categories remain accessible at the end.
+function orderedGroups(){
+ const available=groups.slice(1).map(g=>g.id);
+ const configuredOrder=Array.isArray(state.settings?.featured_categories)?state.settings.featured_categories:[];
+ const ordered=[...new Set(configuredOrder.filter(id=>available.includes(id)))];
+ return [groupById.all,...[...ordered,...available.filter(id=>!ordered.includes(id))].map(id=>groupById[id])];
+}
+function syncCategoryNavigation(){
+ const ids=orderedGroups().slice(1).map(g=>g.id);
+ for(const selector of ['.hy-nav .hy-container','#hy-mobile-menu']){
+  const parent=document.querySelector(selector);
+  if(!parent)return;
+  const info=selector.startsWith('.hy-nav')?parent.querySelector('.hy-nav-info'):null;
+  for(const id of ids){
+   const link=parent.querySelector('a[href="#/catalog/'+id+'"]');
+   if(!link)continue;
+   if(info)parent.insertBefore(link,info);
+   else parent.appendChild(link);
+  }
+ }
+}
 const patterns = {
   sunum:/tepsi|tabak|sunum|servis|şekerlik|sekerlik|lokum|fincan|sosluk|baharatlık|baharatlik|kase|kâse|çerez|cerez|bardak|sürahi|surahi|buz kovası|buz kovasi/i,
   dekor:/mumluk|tütsülük|tutsuluk|buhurdan|vazo|dekor|şamdan|samdan|saksı|saksi|abajur|şömine|somine|biblo|hediyelik|duvar|çiçeklik|ciceklik/i
@@ -72,7 +94,7 @@ function featureBanner(){
 }
 function home(){
  const prioritized=state.settings.featured_categories||[];
- const picks=[...prioritized,...groups.slice(1).map(x=>x.id)].filter((v,i,a)=>a.indexOf(v)===i).map(id=>groupById[id]).filter(Boolean).slice(0,6);
+ const picks=orderedGroups().slice(1,7);
  const heroGroup=state.settings.hero_category||'tencere';
  const heroProduct=state.products.find(p=>getGroup(p)===heroGroup&&photoOf(p))||state.products.find(p=>photoOf(p));
  const heroImage=heroProduct?photoOf(heroProduct):fallbackImage('all');
@@ -127,13 +149,13 @@ function catalog(id='all',query=new URLSearchParams()){
   pages.map((n,i)=> (i>0&&n-pages[i-1]>1?'<span>…</span>':'')+'<a class="'+(n===page?'active':'')+'" href="'+link(n)+'" '+(n===page?'aria-current="page"':'')+'>'+n+'</a>').join('')+
   (page<pageCount?'<a href="'+link(page+1)+'" aria-label="Sonraki sayfa">›</a>':'')+'</nav>':'';
  return '<section class="hy-catalog-head"><div class="hy-container"><nav class="hy-breadcrumb"><a href="#/">Ana sayfa</a><span>›</span> Ürünler</nav><div class="hy-catalog-head-inner"><div><span class="hy-overline">BAKIR MUTFAK / KATALOG</span><h1>'+escapeHTML(groupById[current].name)+'</h1><p>'+escapeHTML(groupById[current].sub)+' · '+filtered.length+' ürün</p></div><span class="hy-catalog-deco">BM</span></div>'+
-  '<div class="hy-category-pills">'+groups.map(g=>'<a href="#/catalog/'+g.id+'" class="'+(g.id===current?'active':'')+'">'+escapeHTML(g.name)+' <small>'+countFor(g.id)+'</small></a>').join('')+'</div></div></section>'+
-  '<div class="hy-container hy-catalog-layout"><aside class="hy-sidebar"><div class="hy-sidebar-head"><strong>Kategoriler</strong></div><nav>'+groups.map(g=>'<a href="#/catalog/'+g.id+'" class="'+(current===g.id?'active':'')+'"><span>'+escapeHTML(g.name)+'</span><small>'+countFor(g.id)+'</small></a>').join('')+'</nav><div class="hy-sidebar-note"><strong>Ürününüzü bulun</strong><p>Ürünleri ilgi listenize ekleyip ürün kodlarını tek seferde kopyalayabilirsiniz.</p></div></aside>'+
+  '<div class="hy-category-pills">'+orderedGroups().map(g=>'<a href="#/catalog/'+g.id+'" class="'+(g.id===current?'active':'')+'">'+escapeHTML(g.name)+' <small>'+countFor(g.id)+'</small></a>').join('')+'</div></div></section>'+
+  '<div class="hy-container hy-catalog-layout"><aside class="hy-sidebar"><div class="hy-sidebar-head"><strong>Kategoriler</strong></div><nav>'+orderedGroups().map(g=>'<a href="#/catalog/'+g.id+'" class="'+(current===g.id?'active':'')+'"><span>'+escapeHTML(g.name)+'</span><small>'+countFor(g.id)+'</small></a>').join('')+'</nav><div class="hy-sidebar-note"><strong>Ürününüzü bulun</strong><p>Ürünleri ilgi listenize ekleyip ürün kodlarını tek seferde kopyalayabilirsiniz.</p></div></aside>'+
   '<div class="hy-results"><div class="hy-results-toolbar"><div><strong>'+filtered.length+' ürün</strong><span>'+(search?'“'+escapeHTML(search)+'” arama sonuçları':'Koleksiyon sonuçları')+'</span></div>'+
   '<button class="hy-mobile-filter" id="hy-filter-toggle" aria-expanded="'+state.filterOpen+'">☷ Filtrele</button>'+
   '<div class="hy-toolbar-fields"><label class="hy-photos-filter"><input type="checkbox" id="hy-photos-only" '+(photosOnly?'checked':'')+'> Görselli ürünler</label><label>Sırala <select id="hy-sort"><option value="featured" '+(sort==='featured'?'selected':'')+'>Önerilen</option><option value="gallery" '+(sort==='gallery'?'selected':'')+'>Çok görselli</option><option value="name" '+(sort==='name'?'selected':'')+'>A–Z</option><option value="name-desc" '+(sort==='name-desc'?'selected':'')+'>Z–A</option></select></label></div></div>'+
   (search?'<div class="hy-search-chip">Arama: '+escapeHTML(search)+' <a href="#/catalog/'+current+'">✕ Temizle</a></div>':'')+
-  '<div class="hy-mobile-filter-panel" id="hy-mobile-filter-panel" '+(!state.filterOpen?'hidden':'')+'><strong>Kategori seç</strong>'+groups.map(g=>'<a href="#/catalog/'+g.id+'">'+escapeHTML(g.name)+' ('+countFor(g.id)+')</a>').join('')+'</div>'+
+  '<div class="hy-mobile-filter-panel" id="hy-mobile-filter-panel" '+(!state.filterOpen?'hidden':'')+'><strong>Kategori seç</strong>'+orderedGroups().map(g=>'<a href="#/catalog/'+g.id+'">'+escapeHTML(g.name)+' ('+countFor(g.id)+')</a>').join('')+'</div>'+
   '<div class="hy-product-grid hy-catalog-grid">'+visible.map(productCard).join('')+'</div>'+
   (!visible.length?'<div class="hy-no-results"><h3>Bu aramaya uygun ürün bulunamadı.</h3><p>Başka bir kelime deneyebilir veya tüm ürünlere dönebilirsiniz.</p><a class="hy-btn hy-btn-primary" href="#/catalog">Tüm ürünler</a></div>':'')+
   '<div class="hy-pagination-caption">Sayfa '+page+' / '+pageCount+' · '+filtered.length+' ürün</div>'+paging+'</div></div>';
@@ -222,6 +244,7 @@ function render(){
  else if(r.page==='compare')content=comparison();
  else content=home();
  root.innerHTML=content;
+ syncCategoryNavigation();
  const title=r.page==='product'?state.products.find(x=>x.slug===r.id)?.name:r.page==='catalog'?groupById[r.id||'all']?.name:r.page==='favorites'?'Favorilerim':r.page==='compare'?'Karşılaştırma':'Bakır Mutfak';
  document.title=(title||'Bakır Mutfak')+' | Bakır Mutfak';
  refreshCounters();
