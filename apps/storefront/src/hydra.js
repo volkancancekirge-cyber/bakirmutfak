@@ -1,5 +1,6 @@
 import './hydra.css';
-import { configured, publishedProducts, publicSourceCatalog, hydraSettings, hydraMerchandising, submitQuoteRequest } from './supabase.js';
+import { configured, publishedProducts, publicSourceCatalog, hydraSettings, hydraMerchandising, publicCatalogContent, submitQuoteRequest } from './supabase.js';
+import { productContent } from './product-content.js';
 
 const by = s => document.querySelector(s);
 const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -165,6 +166,13 @@ function detail(p){
  const images=(p.image_urls||[]).filter(x=>typeof x==='string'&&x.startsWith('https://'));
  const selected=images[0]||'';
  const liked=favorites.has(p.id),saved=interest.has(p.id);
+ const narrative=productContent(p,getGroup(p));
+ const specHtml=narrative.facts.length?'<dl class="hy-spec-list">'+narrative.facts.map(f=>
+   '<div><dt>'+escapeHTML(f.label)+'</dt><dd>'+escapeHTML(f.value)+'</dd></div>').join('')+'</dl>':
+   '<p>Bu ürün için doğrulanmış ölçü veya kaplama bilgisi henüz bulunmuyor.</p>';
+ const sourceLink=(()=>{
+   try{const u=new URL(p.source_url);if(u.protocol==='https:'&&['bakirbul.com','thecoppery.com','yardimcibakir.com.tr'].includes(u.hostname))return u.href;}catch{}return null;
+ })();
  const similar=state.products.filter(x=>x.id!==p.id&&getGroup(x)===getGroup(p)&&photoOf(x)).slice(0,5);
  return '<main class="hy-container hy-product-page"><nav class="hy-breadcrumb"><a href="#/">Ana sayfa</a><span>›</span><a href="#/catalog/'+getGroup(p)+'">'+escapeHTML(groupById[getGroup(p)].name)+'</a><span>›</span><span>'+escapeHTML(p.name)+'</span></nav>'+
   '<div class="hy-detail-layout"><div class="hy-gallery"><div class="hy-gallery-main" id="hy-gallery-main">'+(selected?'<img src="'+escapeHTML(selected)+'" alt="'+escapeHTML(p.name)+'" id="hy-main-photo">':imageOf(p))+
@@ -176,7 +184,10 @@ function detail(p){
   '<div class="hy-detail-availability"><span class="hy-status-dot"></span> İncelemeye ve ilgi listesine eklemeye açık</div>'+
   '<div class="hy-detail-actions"><button class="hy-btn hy-btn-primary" data-interest="'+escapeHTML(p.id)+'">'+(saved?'✓ İlgi listesinde':'＋ İlgi listeme ekle')+'</button><button class="hy-detail-heart" data-favorite="'+escapeHTML(p.id)+'" aria-pressed="'+liked+'" aria-label="Favori">'+(liked?'♥':'♡')+'</button><button class="hy-detail-heart" data-compare="'+escapeHTML(p.id)+'" aria-pressed="'+compare.has(p.id)+'" aria-label="Karşılaştır">⇄</button></div>'+
   '<div class="hy-detail-footnotes"><div><span>◇</span> <div><strong>Ürünleri karşılaştırın</strong><small>Beğendiklerinizi ilgi listesinde biriktirin.</small></div></div><div><span>↗</span><div><strong>Teklif hazırlığı</strong><small>Ürün kodlarını tek tuşla kopyalayın.</small></div></div></div>'+
-  '<details class="hy-detail-accordion" open><summary>Ürün bilgileri</summary><p>Ürün adı ve görselleri izinli tedarikçi kataloğundan alınmıştır. Fiyat, stok, ölçü ve malzeme detayları henüz ayrıca doğrulanmadı.</p></details>'+
+  '<details class="hy-detail-accordion" open><summary>Ürün açıklaması</summary><div class="hy-description-body">'+escapeHTML(narrative.description).split(/\n\s*\n/).map(t=>'<p>'+t.replace(/\n/g,'<br>')+'</p>').join('')+'</div>'+
+  '<p class="hy-content-origin">'+(narrative.reviewed?'✓ Kaynakla karşılaştırılmış, yönetici onaylı açıklama.':'Ürün adı ve katalog bilgisinden hazırlanmış ön açıklama. Kesin teknik özellikler tedarikçi teyidine tabidir.')+'</p></details>'+
+  '<details class="hy-detail-accordion" open><summary>Model özellikleri</summary>'+specHtml+'<p class="hy-content-origin">'+(narrative.reviewed?'Yönetim panelinde onaylanmış bilgiler.':'Başlıkta bulunan ifadeler gösterilir; bağımsız teknik doğrulama yapılmamıştır.')+'</p></details>'+
+  (sourceLink?'<div class="hy-source-link"><span>Ürün kaynağı: '+escapeHTML(narrative.source)+'</span><a href="'+escapeHTML(sourceLink)+'" target="_blank" rel="noopener noreferrer nofollow">Tedarikçide incele ↗</a></div>':'')+
   '<details class="hy-detail-accordion"><summary>Bakır ürünlerde kullanım ve bakım</summary><p>Gıda ile temas eden ürünlerde iç kaplama ve üretici kullanım talimatları kontrol edilmelidir. Bakım talimatları ürüne göre farklılık gösterebilir.</p></details></div></div>'+
   (similar.length?'<section class="hy-section hy-related"><div class="hy-section-heading"><div><span class="hy-overline">BUNLARI DA BEĞENEBİLİRSİNİZ</span><h2>Benzer ürünler</h2></div><a class="hy-text-link" href="#/catalog/'+getGroup(p)+'">Tümünü gör ↗</a></div><div class="hy-product-grid hy-shelf-grid">'+similar.map(productCard).join('')+'</div></section>':'')+'</main>';
 }
@@ -313,13 +324,14 @@ async function loadData(){
  state.loading=true;state.error='';render();
  if(!configured){state.products=[];state.loading=false;render();return;}
  try{
-  const [retail,catalogItems,settingsResult,merchResult]=await Promise.all([publishedProducts(),publicSourceCatalog(),hydraSettings().catch(()=>null),hydraMerchandising().catch(()=>[])]);
+  const [retail,catalogItems,settingsResult,merchResult,contentResult]=await Promise.all([publishedProducts(),publicSourceCatalog(),hydraSettings().catch(()=>null),hydraMerchandising().catch(()=>[]),publicCatalogContent().catch(()=>[])]);
   if(version!==loadVersion)return;
   const first=(retail||[]).map(p=>({...p,id:String(p.id),slug:p.slug||String(p.id),catalog_only:false,priceConfirmed:false,image_urls:p.image_urls||[]}));
   const second=(catalogItems||[]).map(p=>({...p,id:String(p.id),slug:'catalog-'+p.id,catalog_only:true,priceConfirmed:false,price:null,stock:null,sku:p.supplier_sku||'',image_urls:p.image_urls||[]}));
   if(settingsResult)state.settings={...state.settings,...settingsResult};
   const overrides=new Map((merchResult||[]).map(x=>[x.product_id,x]));
-  state.products=[...second.map(p=>({...p,...(overrides.get(p.id)||{})})),...first].filter(p=>!p.hidden_from_storefront);
+  const contentMap=new Map((contentResult||[]).map(x=>[x.product_id,x]));
+  state.products=[...second.map(p=>({...p,...(overrides.get(p.id)||{}),content:contentMap.get(p.id)||null})),...first].filter(p=>!p.hidden_from_storefront);
   state.loading=false;render();
  }catch(e){if(version!==loadVersion)return;state.loading=false;state.error=e.message||'Bir bağlantı hatası oluştu.';render();}
 }
