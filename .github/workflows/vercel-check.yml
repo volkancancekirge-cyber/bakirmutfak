@@ -27,6 +27,8 @@ jobs:
         run: deno check supabase/functions/approved-photo-import/index.ts
       - name: Check full-source catalogue importer
         run: deno check supabase/functions/approved-catalog-bulk/index.ts
+      - name: Type-check owner-only supplier description preview
+        run: deno check supabase/functions/supplier-content-preview/index.ts
       - name: Type-check public quote Edge Function
         run: deno check supabase/functions/hydra-quote-request/index.ts
       - name: Install dependencies

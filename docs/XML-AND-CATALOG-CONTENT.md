@@ -19,7 +19,7 @@ Hydra artık her ürün detay sayfasında ürünün kendi ismi, SKU'su, adından
 Üreticiden kaynaklı gerçek bir açıklamayı onaylamak için:
 1. https://bakirmutfak.vercel.app/admin.html#/content sayfasını aç.
 2. Ürün adı veya SKU ile ürünü bul, **Ürünün tedarikçi sayfasını aç** bağlantısını kullan.
-3. Doğrulanmış ölçü, model, üretim, yüzey, kaplama, bakım vb. bilgileri kendi sözlerinle açıklama alanına yaz. Teknik özellikleri her satırda \`Özellik: Değer\` biçiminde gir.
+3. **Kaynak açıklamasını getir** butonuyla izinli tedarikçinin sayfa metnini ön taslağa almayı deneyebilirsin. Kaynak engellerse doğrudan siteyi aç. Doğrulanmış ölçü, model, üretim, yüzey, kaplama, bakım vb. bilgileri kendi sözlerinle açıklama alanına yaz. Otomatik getirilen içerik yayımlanmaz; doğru kaynakla eşleştiğini yine kontrol et. Teknik özellikleri her satırda \`Özellik: Değer\` biçiminde gir.
 4. **Taslak kaydet** ile yalnızca yönetici tarafında sakla. **Bu açıklamadaki teknik iddiaları kaynakta kontrol ettim** işaretleyip **Kontrol ettim, yayımla** ile ürün detayında göster.
 5. Yazma işlemi DB'den tekrar okunarak doğrulanır. Onay işlemi fiyat/stoğu veya sipariş sistemini açmaz.
 

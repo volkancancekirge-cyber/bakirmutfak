@@ -45,6 +45,10 @@ test.beforeEach(async({page})=>{
     if(request.method()==='PATCH')quoteState={...quoteState,...request.postDataJSON()};
     return route.fulfill({status:200,headers,body:JSON.stringify([quoteState])});
   }
+  if(url.includes('/functions/v1/supplier-content-preview'))
+    return route.fulfill({status:200,headers,body:JSON.stringify({ok:true,requires_review:true,source_kind:'supplier_page',
+    description:'Tedarikçi sayfasından alınmış, yayın öncesinde kontrol edilmesi gereken ürün açıklaması. Gerçek satış bilgileri ayrıca doğrulanmalıdır.',
+    short_description:'Tedarikçi kaynağından gelen denetlenecek ön açıklama.',specifications:{Model:'Klasik cezve'}})});
   if(url.includes('bm_product_content?')){
     if(request.method()==='POST'){
       const body=request.postDataJSON()[0];contentRows.set(body.product_id,body);
@@ -407,4 +411,21 @@ test('Unapproved draft stays hidden from public product details',async({page})=>
  await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
  await expect(page.locator('.hy-description-body')).not.toContainText('Taslak özel metin');
  await expect(page.locator('.hy-content-origin').first()).toContainText('ön açıklama');
+});
+
+
+test('Approved supplier research fills a draft without publishing',async({page})=>{
+ await page.goto('/admin.html#/content');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await expect(page.locator('#bm-content-list .bm-content-result')).toHaveCount(16);
+ await page.locator('#bm-content-list .bm-content-result').first().click();
+ await page.locator('#bm-source-preview').click();
+ await expect(page.locator('#bm-content-notice')).toContainText('Henüz kaydedilmedi');
+ await expect(page.locator('#bm-content-form textarea[name="description"]')).toHaveValue(/Tedarikçi sayfasından alınmış/);
+ await expect(page.locator('#bm-content-form select[name="source_kind"]')).toHaveValue('supplier_page');
+ await expect(page.locator('#bm-content-confirm')).not.toBeChecked();
+ await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
+ await expect(page.locator('.hy-description-body')).not.toContainText('Tedarikçi sayfasından alınmış');
 });

@@ -244,3 +244,7 @@
 .bm-content-editor-buttons button{flex:1;min-width:145px}
 @media(max-width:1080px){.bm-content-grid{grid-template-columns:1fr}.bm-content-workspace .panel{padding:18px}#bm-content-list{max-height:420px}}
 @media(max-width:640px){.bm-content-editor{padding:14px}.bm-content-result{padding:7px}.bm-content-result img,.bm-content-no-image{width:47px;height:47px;flex-basis:47px}.bm-content-review{font-size:9px}}
+
+.bm-source-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:15px 0}
+.bm-source-actions .bm-content-source-link{margin:0}
+.bm-source-actions button{padding:11px;font-size:12px}
