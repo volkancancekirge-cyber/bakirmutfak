@@ -18,6 +18,7 @@ export async function mountProductContentAdmin(workspace){
  if(!root.isConnected)workspace.append(root);
  const notice=(message,error=false)=>{const el=root.querySelector('#bm-content-notice');el.hidden=false;el.textContent=message;el.className='alert'+(error?' error':'');};
  const state={rows:[],records:new Map(),page:1,selected:null,query:'',status:'all'};
+ const pageSize=16;
  try{
   const [rows,records]=await Promise.all([adminSourceCatalog(),adminCatalogContent()]);
   if(!root.isConnected)return;
@@ -25,7 +26,6 @@ export async function mountProductContentAdmin(workspace){
   state.records=new Map(records.map(c=>[c.product_id,c]));
   renderList();
  }catch(error){notice('Ürün içerikleri yüklenemedi: '+error.message,true);root.querySelector('#bm-content-list').textContent='Ürün bilgileri okunamadı.';return;}
- const pageSize=16;
  function visible(){
   const q=state.query.toLocaleLowerCase('tr');
   return state.rows.filter(p=>(state.status==='all'||(state.status==='missing'&&!state.records.has(p.id))||
