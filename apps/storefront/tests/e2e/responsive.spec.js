@@ -27,6 +27,7 @@ test.beforeEach(async({page})=>{
    hero_category:'cezve',featured_categories:['caydanlik','cezve','tencere','sunum','dekor']
  };
  const merchRows=new Map();
+ const contentRows=new Map();
  let quoteState={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',contact_name:'Deneme Müşterisi',
    contact_email:'dummy@example.test',contact_phone:'',message:'Ürün hakkında bilgi',
    items:[{id:products[0].id,name:products[0].name,sku:products[0].supplier_sku}],
@@ -43,6 +44,16 @@ test.beforeEach(async({page})=>{
   if(url.includes('bm_quote_requests?')){
     if(request.method()==='PATCH')quoteState={...quoteState,...request.postDataJSON()};
     return route.fulfill({status:200,headers,body:JSON.stringify([quoteState])});
+  }
+  if(url.includes('bm_product_content?')){
+    if(request.method()==='POST'){
+      const body=request.postDataJSON()[0];contentRows.set(body.product_id,body);
+      return route.fulfill({status:201,headers,body:JSON.stringify([body])});
+    }
+    const match=url.match(/product_id=eq[.]([0-9a-f-]{36})/i);
+    let records=match?(contentRows.has(match[1])?[contentRows.get(match[1])]:[]):[...contentRows.values()];
+    if(url.includes('review_status=eq.approved'))records=records.filter(x=>x.review_status==='approved');
+    return route.fulfill({status:200,headers,body:JSON.stringify(records)});
   }
   if(url.includes('bm_hydra_settings?')){
    if(request.method()==='PATCH')themeSettings={...themeSettings,...request.postDataJSON()};
@@ -349,4 +360,51 @@ test('XML parser rejects DTD and ENTITY even in supplier template',async({page})
  buffer:Buffer.from('<!DOCTYPE Root [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]><Root><Urunler><Urun>&xxe;</Urun></Urunler></Root>')});
  await expect(page.locator('#xml-preview')).toContainText('DTD/ENTITY içeren XML kabul edilmez');
  await expect(page.locator('#xml-preview button#export-csv')).toHaveCount(0);
+});
+
+
+test('All supplier products have unique title-grounded detail copy and source reference',async({page})=>{
+ await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
+ await expect(page.locator('.hy-detail-layout h1')).toContainText('Klasik Bakır Cezve');
+ await expect(page.locator('.hy-description-body')).toContainText('Klasik Bakır Cezve 1 modelini');
+ await expect(page.locator('.hy-description-body')).toContainText('Cezve seçerken');
+ await expect(page.locator('.hy-content-origin').first()).toContainText('ön açıklama');
+ await expect(page.locator('.hy-source-link')).toContainText('BakırBul');
+ await expect(page.locator('.hy-source-link a')).toHaveAttribute('href',/bakirbul.com/);
+ await expect(page.locator('.hy-detail-price')).toContainText('Fiyat bilgisi hazırlanıyor');
+});
+test('Admin verifies one supplier description and public product shows approved copy',async({page})=>{
+ await page.goto('/admin.html#/content');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await expect(page.locator('#bm-content-list .bm-content-result')).toHaveCount(16);
+ await page.locator('#bm-content-list .bm-content-result').first().click();
+ await expect(page.locator('#bm-content-form')).toBeVisible();
+ await expect(page.locator('.bm-content-source-link')).toHaveAttribute('href',/bakirbul.com/);
+ const approved='Klasik bakır cezve modeli tedarikçi sayfasındaki ürün koduyla karşılaştırıldı. Ürün kodu TEST-1 olarak kayıtlıdır. Teknik ölçüler üretici tarafından ayrıca doğrulanmalıdır.';
+ await page.locator('#bm-content-form textarea[name="description"]').fill(approved);
+ await page.locator('#bm-content-form textarea[name="short_description"]').fill('Klasik bakır cezve ürün modeli.');
+ await page.locator('#bm-content-form select[name="source_kind"]').selectOption('supplier_page');
+ await page.locator('#bm-content-form textarea[name="specifications"]').fill('Model: Klasik cezve');
+ await page.locator('#bm-content-form input[id="bm-content-confirm"]').check();
+ await page.locator('#bm-content-form button[data-save-mode="approved"]').click();
+ await expect(page.locator('#bm-content-notice')).toContainText('onaylandı');
+ await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
+ await expect(page.locator('.hy-description-body')).toContainText(approved);
+ await expect(page.locator('.hy-spec-list')).toContainText('Klasik cezve');
+ await expect(page.locator('.hy-content-origin').first()).toContainText('yönetici onaylı');
+});
+test('Unapproved draft stays hidden from public product details',async({page})=>{
+ await page.goto('/admin.html#/content');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await page.locator('#bm-content-list .bm-content-result').first().click();
+ await page.locator('#bm-content-form textarea[name="description"]').fill('Taslak özel metin onaylanmadan müşteriye görünmemelidir.');
+ await page.locator('#bm-content-form button[data-save-mode="draft"]').click();
+ await expect(page.locator('#bm-content-notice')).toContainText('taslak');
+ await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
+ await expect(page.locator('.hy-description-body')).not.toContainText('Taslak özel metin');
+ await expect(page.locator('.hy-content-origin').first()).toContainText('ön açıklama');
 });
