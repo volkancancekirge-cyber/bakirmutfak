@@ -28,6 +28,16 @@ test.beforeEach(async({page})=>{
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'apikey,authorization,content-type','access-control-allow-methods':'GET,OPTIONS','content-type':'application/json'};
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers});
   const url=request.url();
+  if(url.includes('/auth/v1/token'))return route.fulfill({status:200,headers,body:JSON.stringify({access_token:'test-token-owner',refresh_token:'test-refresh',expires_in:3600})});
+  if(url.includes('/auth/v1/user'))return route.fulfill({status:200,headers,body:JSON.stringify({id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',email:'test-admin@example.com'})});
+  if(url.includes('bm_admin_users?'))return route.fulfill({status:200,headers,body:JSON.stringify([{user_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',role:'owner'}])});
+  if(url.includes('bm_quote_requests?')){
+    const sample={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',contact_name:'Deneme Müşterisi',
+     contact_email:'dummy@example.test',contact_phone:'',message:'Ürün hakkında bilgi',
+     items:[{id:products[0].id,name:products[0].name,sku:products[0].supplier_sku}],
+     status:'new',admin_notes:'',created_at:'2026-11-03T10:00:00.000Z'};
+    return route.fulfill({status:200,headers,body:JSON.stringify(request.method()==='PATCH'?[sample]:[sample])});
+  }
   if(url.includes('bm_hydra_settings?'))return route.fulfill({status:200,headers,body:JSON.stringify([{id:1,hero_title:'Bakırın en güzel seçkisi.',hero_subtitle:'Her kategoriye özel bakır ürünleri keşfedin.',hero_category:'cezve',featured_categories:['caydanlik','cezve','tencere','sunum','dekor']}])});
   if(url.includes('bm_hydra_merchandising?'))return route.fulfill({status:200,headers,body:'[]'});
   if(url.includes('/functions/v1/hydra-quote-request'))return route.fulfill({status:200,headers,body:JSON.stringify({ok:true,reference:'22222222-2222-4222-8222-222222222222'})});
@@ -136,4 +146,36 @@ test('Interest list generates explicit-consent quote request',async({page})=>{
  await page.locator('#hy-quote-form button[type="submit"]').click();
  await expect(page.locator('#hy-quote-feedback')).toContainText('Talebiniz başarıyla kaydedildi');
  await expect(page.locator('#hy-quote-form')).toBeHidden();
+});
+
+
+test('Hydra Admin 2.0 owner flow controls hero and catalog without exposed credentials',async({page})=>{
+ await page.setViewportSize({width:1366,height:900});
+ await page.goto('/admin.html');
+ await expect(page.locator('#login-form')).toBeVisible();
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await expect(page.locator('.app-shell')).toBeVisible();
+ await page.locator('[data-tab="hydra"]').click();
+ await expect(page.locator('#ha-hero-form')).toBeVisible();
+ await expect(page.locator('.ha-product-row')).toHaveCount(24);
+ await page.locator('#ha-hero-form input[name="hero_title"]').fill('Yeni Hydra koleksiyonu başlığı');
+ await page.locator('#ha-hero-form button[type="submit"]').click();
+ await expect(page.locator('#ha-alert')).toContainText('Hydra ana sayfa ayarları kaydedildi');
+ await page.locator('.ha-product-row').first().locator('button[type="submit"]').click();
+ await expect(page.locator('#ha-alert')).toContainText('Ürün vitrin ayarı kaydedildi');
+});
+test('Hydra Admin 2.0 private quote inbox uses owner session',async({page})=>{
+ await page.goto('/admin.html');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await expect(page.locator('.app-shell')).toBeVisible();
+ await page.locator('[data-tab="quotes"]').click();
+ await expect(page.locator('.ha-quote')).toHaveCount(1);
+ await expect(page.locator('.ha-quote')).toContainText('Deneme Müşterisi');
+ await page.locator('.ha-quote select[name="status"]').selectOption('reviewing');
+ await page.locator('.ha-quote button[type="submit"]').click();
+ await expect(page.locator('.ha-quote button[type="submit"]')).toContainText('Kaydedildi');
 });
