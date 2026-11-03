@@ -1,7 +1,7 @@
 // Public Hydra quote requests; only this server can write private customer data.
 import { createClient } from "npm:@supabase/supabase-js@2.78.0";
 const baseUrl=Deno.env.get("SUPABASE_URL")||"";
-const secret=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";
+const secret=(()=>{try{const keys=JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS")||"{}");if(typeof keys.default==="string"&&keys.default)return keys.default;}catch{/* legacy fallback */}return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")||"";})();
 const cors={"Access-Control-Allow-Origin":"https://bakirmutfak.vercel.app","Access-Control-Allow-Methods":"POST, OPTIONS","Access-Control-Allow-Headers":"apikey,authorization,content-type,x-client-info","Cache-Control":"no-store","Vary":"Origin"};
 const respond=(status:number,data:unknown)=>new Response(JSON.stringify(data),{status,headers:{...cors,"Content-Type":"application/json; charset=utf-8"}});
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
