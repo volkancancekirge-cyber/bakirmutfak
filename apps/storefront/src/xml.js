@@ -63,7 +63,9 @@ export function csvFromRows(rows){
   const cols=['sku','name','price','stock','category','product_type','description','images'];
   return [cols.join(','),...rows.map(row=>cols.map(k=>{
     const raw=k==='images'?row.image_urls.join('|'):String(row[k]??'');
-    return '"'+raw.replace(/"/g,'""')+'"';
+    // Supplier-provided text may contain spreadsheet formulas. Escape them in CSV exports.
+    const safe=/^[\u0000-\u0020]*[=+\-@]/.test(raw)?"'"+raw:raw;
+    return '"'+safe.replace(/"/g,'""')+'"';
   }).join(','))].join('\r\n');
 }
 
