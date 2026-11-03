@@ -59,7 +59,7 @@ export async function mountProductContentAdmin(workspace){
     Object.entries(record.specifications).map(([key,value])=>key+': '+value).join('\n'):'';
   const editor=root.querySelector('#bm-content-editor');
   editor.innerHTML='<div class="bm-content-editor-head"><span class="eyebrow">ÜRÜN AÇIKLAMASI</span><h3>'+esc(p.name)+'</h3><small>SKU: '+esc(p.supplier_sku||'—')+'</small></div>'+
-   (url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" class="outline bm-content-source-link">Ürünün tedarikçi sayfasını aç ↗</a><button type="button" class="outline" id="bm-source-preview">Kaynak açıklamasını getir ⇣</button>':'')+
+   (url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" class="outline bm-content-source-link">Ürünün tedarikçi sayfasını aç ↗</a><a href="https://www.google.com/search?q='+encodeURIComponent(p.name+' '+(p.supplier_sku||''))+'" target="_blank" rel="noopener noreferrer" class="outline bm-content-search-link">Ürün adını araştır ↗</a><button type="button" class="outline" id="bm-source-preview">Kaynak açıklamasını getir ⇣</button>':'')+
    '<details class="bm-title-facts" open><summary>Ürün başlığından okunabilen bilgiler</summary>'+
    (helper.facts.length?helper.facts.map(f=>'<span>'+esc(f.label)+': '+esc(f.value)+'</span>').join(' '):'<p>Başlıktan kesin ölçü/işçilik verisi çıkarılamadı.</p>')+
    '<p>Bu etiketler kaynak başlığından alındı; bağımsız teknik doğrulama değildir.</p></details>'+
