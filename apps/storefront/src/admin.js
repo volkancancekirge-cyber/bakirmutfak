@@ -125,7 +125,7 @@ if(tab==='products') {
   $('#add-product').onclick=()=>openEditor(null);
   document.querySelectorAll('[data-edit]').forEach(btn=>btn.onclick=()=>openEditor(products.find(p=>p.id===btn.dataset.edit)));
 }
-if(tab==='xml')$('#feed-file').onchange=onFeed;
+if(tab==='xml'){const field=$('#feed-file');field.onchange=onFeed;if(previewStructure||previewError)showPreview();}
 if(tab==='history')$('#refresh-history').onclick=async()=>{try{audit=await productAudit();render()}catch(e){status(e.message,true)}};
 if(tab==='sources') { attachSourceActions(); const workspace=document.querySelector('.workspace'); mountBulkCatalog(workspace).catch(err=>status('Toplu aktarım ekranı hazırlanamadı: '+err.message,true)); mountPhotoReview(workspace).catch(err=>status('Görsel paneli hazırlanamadı: '+err.message,true)); }
 if(tab==='hydra')mountHydraAdmin(document.querySelector('.workspace')).catch(e=>status('Hydra vitrin paneli hatası: '+e.message,true));
