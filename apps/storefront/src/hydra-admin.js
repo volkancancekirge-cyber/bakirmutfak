@@ -30,6 +30,10 @@ export async function mountHydraAdmin(workspace){
      '<div class="ha-order-row"><label><input data-category-enabled="'+x.id+'" type="checkbox" '+(x.enabled?'checked':'')+'> '+esc(x.label)+'</label>'+
      '<label>Sıra <select data-category-order="'+x.id+'">'+Array.from({length:6},(_,i)=>'<option value="'+i+'" '+(x.position===i?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></div>'
     ).join('')+'</div><button class="primary" type="submit">Vitrin ayarlarını kaydet ↗</button></form>';
+  pane.querySelector('#ha-hero-form').addEventListener('input',()=>{
+    const save=pane.querySelector('#ha-hero-form button[type="submit"]');
+    if(save&&!save.disabled)save.textContent='Vitrin ayarlarını kaydet ↗';
+  });
   pane.querySelector('#ha-hero-form').addEventListener('invalid',event=>{
     notice('Lütfen formdaki alanı kontrol edin: '+(event.target?.validationMessage||'Geçersiz bilgi.'),true);
   },true);
@@ -84,6 +88,12 @@ export async function mountHydraAdmin(workspace){
     productsEl.querySelector('#ha-category').onchange=e=>{state.group=e.target.value;state.page=1;render();};
     productsEl.querySelector('#ha-prev').onclick=()=>{state.page--;render();};
     productsEl.querySelector('#ha-next').onclick=()=>{state.page++;render();};
+    productsEl.querySelectorAll('[data-product]').forEach(form=>{
+      const save=form.querySelector('button[type="submit"]');
+      const reset=()=>{if(!save.disabled){save.textContent='Kaydet';save.title='';}};
+      form.addEventListener('input',reset);
+      form.addEventListener('change',reset);
+    });
     productsEl.querySelectorAll('[data-product]').forEach(form=>form.onsubmit=async e=>{
       e.preventDefault();const id=form.dataset.product,fd=new FormData(form),b=form.querySelector('button[type=submit]');
       const priority=Number(fd.get('sort_priority'));
