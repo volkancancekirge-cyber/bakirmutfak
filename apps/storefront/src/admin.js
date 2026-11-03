@@ -1,11 +1,11 @@
 import './admin.css';
-import {configured,currentSession,login,logout,getAdmin,adminProducts,setPublished,saveProduct,updateProduct,uploadProductImage,applyXmlImport,productAudit,researchSources,addResearchSource,setResearchPermission} from './supabase.js';
+import {configured,currentSession,login,logout,getAdmin,adminProducts,setPublished,saveProduct,updateProduct,uploadProductImage,productAudit,researchSources,addResearchSource,setResearchPermission,adminSourceCatalog} from './supabase.js';
 import {mountProductEditor} from './product-editor.js';
 import {mountHydraAdmin} from './hydra-admin.js';
 import {mountQuoteInbox} from './quote-admin.js';
 import {mountPhotoReview} from './photo-review.js';
 import {mountBulkCatalog} from './bulk-import.js';
-import {parseSupplierXml,csvFromRows} from './xml.js';
+import {parseSupplierXml,csvFromRows,inspectSupplierXml} from './xml.js';
 
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -20,7 +20,7 @@ function restoredTab() {
   const saved=(()=>{try{return sessionStorage.getItem(ADMIN_TAB_KEY)}catch{return null}})();
   return tabFromHash()||(ADMIN_TABS.has(saved)?saved:'dashboard');
 }
-let user=null,products=[],audit=[],sources=[],preview=null,previewName='',tab=restoredTab();
+let user=null,products=[],audit=[],sources=[],preview=null,previewName='',previewStructure=null,previewComparison=null,previewError='',tab=restoredTab();
 function rememberTab(next,addHistory=true) {
   if(!ADMIN_TABS.has(next))return;
   tab=next;
@@ -62,7 +62,7 @@ async function refreshProducts(){products=await adminProducts()||[]}
 function dashboard(){
 const published=products.filter(x=>x.published).length,stock=products.reduce((n,p)=>n+Number(p.stock||0),0);
 const stats=[['Elle yönetilen ürün',products.length,'◈'],['Yayındaki manuel ürün',published,'↗'],['Manuel stok toplamı',stock,'▤'],['Manuel taslak',products.length-published,'○']];
-return '<div class="stat-grid">'+stats.map(([title,num,ico])=>'<div class="stat-card"><div class="stat-icon">'+ico+'</div><small>'+title+'</small><strong>'+num+'</strong></div>').join('')+'</div><div class="panels"><section class="panel"><div class="panel-head"><div><span class="eyebrow">ÜRÜN YÖNETİMİ</span><h2>Son ürünler</h2></div><button data-tab="products" class="link">Tümünü gör →</button></div>'+rows(products.slice(0,6))+'</section><section class="panel narrow"><span class="eyebrow">HIZLI İŞLEMLER</span><h2>Tedarikçi bağlantısı</h2><p>XML dosyalarını yükle, fiyatları ve stokları ön izle. Hatalı kayıtları kontrol etmeden ürünleri değiştirme.</p><button class="primary" data-tab="sources">İnternetten Ürün Araştır ↗</button><button class="outline" data-tab="xml" style="margin-top:10px">XML Kontrolü</button><button class="outline" data-tab="hydra" style="margin-top:10px">Hydra Vitrin 2.0 ✦</button><button class="outline" data-tab="quotes" style="margin-top:10px">Teklif Talepleri ✉</button><div class="info-note">✓ Yönetici oturumu ve Supabase RLS açık<br>✓ Ürünler SKU ile eşleşir<br>✓ Yeni ürünler önce taslak kalır</div></section></div>';
+return '<div class="stat-grid">'+stats.map(([title,num,ico])=>'<div class="stat-card"><div class="stat-icon">'+ico+'</div><small>'+title+'</small><strong>'+num+'</strong></div>').join('')+'</div><div class="panels"><section class="panel"><div class="panel-head"><div><span class="eyebrow">ÜRÜN YÖNETİMİ</span><h2>Son ürünler</h2></div><button data-tab="products" class="link">Tümünü gör →</button></div>'+rows(products.slice(0,6))+'</section><section class="panel narrow"><span class="eyebrow">HIZLI İŞLEMLER</span><h2>Tedarikçi bağlantısı</h2><p>XML dosyasını güvenli ön izlemeye al; mevcut katalogla eşleşme ve kritik fiyat/stok farklarını kontrol et. Henüz ürünleri değiştirme.</p><button class="primary" data-tab="sources">İnternetten Ürün Araştır ↗</button><button class="outline" data-tab="xml" style="margin-top:10px">XML Kontrolü</button><button class="outline" data-tab="hydra" style="margin-top:10px">Hydra Vitrin 2.0 ✦</button><button class="outline" data-tab="quotes" style="margin-top:10px">Teklif Talepleri ✉</button><div class="info-note">✓ Yönetici oturumu ve Supabase RLS açık<br>✓ Ürünler SKU ile eşleşir<br>✓ Yeni ürünler önce taslak kalır</div></section></div>';
 }
 function rows(items){
 return '<div class="table-wrap"><table><thead><tr><th>ÜRÜN</th><th>SKU</th><th>FİYAT</th><th>STOK</th><th>DURUM</th></tr></thead><tbody>'+items.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><small>'+esc(p.category)+'</small></td><td><code>'+esc(p.sku)+'</code></td><td>'+fmt(p.price)+'</td><td>'+esc(p.stock)+'</td><td><span class="pill '+(p.published?'green':'gray')+'">'+(p.published?'Yayında':'Taslak')+'</span></td></tr>').join('')+'</tbody></table>'+(items.length?'':'<p class="empty">Henüz ürün kaydı bulunmuyor.</p>')+'</div>';
@@ -71,7 +71,7 @@ function productsView(){
 return '<section class="panel"><div class="panel-head"><div><span class="eyebrow">KATALOG</span><h2>Ürünler ve stok</h2><p>Stok ve fiyatlar Supabase veritabanından okunur.</p></div><button class="primary" id="add-product">＋ Yeni ürün</button></div><div class="table-wrap"><table><thead><tr><th>ÜRÜN</th><th>SKU</th><th>FİYAT</th><th>STOK</th><th>YAYIN</th><th>DÜZENLE</th></tr></thead><tbody>'+products.map(p=>'<tr><td><strong>'+esc(p.name)+'</strong><small>'+esc(p.category)+'</small></td><td>'+esc(p.sku)+'</td><td>'+fmt(p.price)+'</td><td>'+esc(p.stock)+'</td><td><label class="switch"><input type="checkbox" data-publish="'+esc(p.id)+'" '+(p.published?'checked':'')+'/><span>'+(p.published?'Açık':'Kapalı')+'</span></label></td><td><button class="outline edit-button" data-edit="'+esc(p.id)+'">Düzenle ✎</button></td></tr>').join('')+'</tbody></table>'+(products.length?'':'<p class="empty">Henüz ürün yok. XML üzerinden içe aktarabilir veya yeni ürün ekleyebilirsin.</p>')+'</div></section><div id="add-product-form"></div>';
 }
 function xmlView(){
-return '<div class="panels xml-panels"><section class="panel"><span class="eyebrow">TEDARİKÇİ XML / ADIM 01</span><h2>XML dosyanı yükle</h2><p>Ürün kodu (SKU), ad, fiyat, stok, açıklama ve görsel bağlantılarını kontrol edeceğiz. Dosya 5 MB / 500 ürün ile sınırlıdır.</p><a class="outline sample-download" href="/samples/ornek-urunler.xml" download="bakirmutfak-ornek-urunler.xml">Örnek XML indir ↓</a><p class="hint">Bu dosya sadece deneme içindir; içe aktarmak istersen örnek kayıtlar taslak oluşturulur.</p><div class="upload-zone"><div class="upload-icon">⇅</div><label for="feed-file">XML dosyası seç</label><input type="file" id="feed-file" accept=".xml,application/xml,text/xml"/><small>Dosya yalnızca bu tarayıcı oturumunda çözümlenir; onay vermeden veritabanına aktarılmaz.</small></div><div class="info-note">İçe aktarma bütün olarak doğrulanır. Tek bir hatalı SKU veya fiyat varsa aktarma kapalı kalır.</div></section><section class="panel narrow"><span class="eyebrow">GÜVENLİK KONTROLÜ</span><h2>Ürünler güvende.</h2><div class="steps"><div><b>01</b><span>XML dosyanı seç</span></div><div><b>02</b><span>Fiyat, stok ve SKU doğrulansın</span></div><div><b>03</b><span>Değişiklikleri onayla</span></div><div><b>04</b><span>Supabase sistemine güvenli aktarım</span></div></div><p>Yeni ürünler otomatik satışa açılmaz. %30 üzeri fiyat değişimlerinde ayrıca onay istenir.</p></section></div><section class="panel" id="xml-preview"><div class="panel-head"><div><span class="eyebrow">ADIM 02 / ÖN İZLEME</span><h2>Dosya seçilmedi</h2></div></div><p>XML seçildiğinde kontrol sonuçları burada görünecek.</p></section>';
+return '<div class="panels xml-panels"><section class="panel"><span class="eyebrow">TEDARİKÇİ XML / ADIM 01</span><h2>XML dosyanı yükle</h2><p>Ürün kodu (SKU), ad, fiyat, stok, açıklama ve görsel bağlantılarını kontrol edeceğiz. Ön izleme 15 MB / 5.000 ürün destekler. Gerçek tedarikçi alanları ve mevcut 711 ürünle eşleşme kontrol edilir.</p><a class="outline sample-download" href="/samples/ornek-urunler.xml" download="bakirmutfak-ornek-urunler.xml">Örnek XML indir ↓</a><p class="hint">Bu dosya sadece deneme içindir; içe aktarmak istersen örnek kayıtlar taslak oluşturulur.</p><div class="upload-zone"><div class="upload-icon">⇅</div><label for="feed-file">XML dosyası seç</label><input type="file" id="feed-file" accept=".xml,application/xml,text/xml"/><small>Dosya tarayıcında analiz edilir; veritabanına yüklenmez. XML içe aktarma, kaynak şema doğrulaması tamamlanıncaya kadar kapalı.</small></div><div class="info-note">İçe aktarma şimdilik devre dışı. Önce ürün kodu, fiyat/stok alanı, mükerrer kayıt ve mevcut katalogla eşleşme doğrulanır; hiçbir ürün otomatik yayımlanmaz.</div></section><section class="panel narrow"><span class="eyebrow">GÜVENLİK KONTROLÜ</span><h2>Ürünler güvende.</h2><div class="steps"><div><b>01</b><span>XML dosyanı seç</span></div><div><b>02</b><span>Fiyat, stok ve SKU doğrulansın</span></div><div><b>03</b><span>Değişiklikleri onayla</span></div><div><b>04</b><span>Supabase sistemine güvenli aktarım</span></div></div><p>Yeni ürünler otomatik satışa açılmaz. %30 üzeri fiyat değişimlerinde ayrıca onay istenir.</p></section></div><section class="panel" id="xml-preview"><div class="panel-head"><div><span class="eyebrow">ADIM 02 / ÖN İZLEME</span><h2>Dosya seçilmedi</h2></div></div><p>XML seçildiğinde kontrol sonuçları burada görünecek.</p></section>';
 }
 function historyView(){
  const fmtState=(state)=>{
@@ -144,18 +144,89 @@ function openEditor(product) {
   });
   el.scrollIntoView({behavior:'smooth',block:'start'});
 }
-async function onFeed(e){
-const file=e.target.files?.[0];if(!file)return;
-preview=null;previewName=file.name;
-if(file.size>5*1024*1024){status('Dosya 5 MB sınırını aşıyor.',true);return;}
-try{preview=parseSupplierXml(await file.text());showPreview()}catch(err){status(err.message,true);}
+
+async function onFeed(e) {
+ const file=e.target.files?.[0];if(!file)return;
+ preview=null;previewName=file.name;previewStructure=null;previewComparison=null;previewError='';
+ if(file.size>15*1024*1024){status('XML 15 MB ön izleme sınırını aşıyor. Dosyayı sohbetimize yükleyebilirsin; büyük tedarikçi XML dosyaları için sunucu analizi gerekiyor.',true);return;}
+ if(!file.name.toLowerCase().endsWith('.xml')){status('Lütfen .xml uzantılı tedarikçi dosyası seç.',true);return;}
+ try{
+  const data=await file.text();
+  previewStructure=inspectSupplierXml(data);
+  try{preview=parseSupplierXml(data);}
+  catch(err){previewError=err.message;status('XML alanları mevcut şemayla tam eşleşmedi: '+previewError,true);}
+  if(preview){
+   try{
+    const sourceRows=await adminSourceCatalog();
+    const normalized=value=>String(value||'').normalize('NFKC').trim().toLocaleLowerCase('tr');
+    const sourceSku=new Set(sourceRows.filter(x=>x.supplier_sku).map(x=>normalized(x.supplier_sku)));
+    const sourceName=new Set(sourceRows.map(x=>normalized(x.name)));
+    const manualSku=new Map(products.map(x=>[normalized(x.sku),x]));
+    let bySku=0,byName=0,manual=0,priceAlerts=0,unmatched=0;
+    for(const row of preview.rows){
+      const sku=normalized(row.sku);
+      if(sourceSku.has(sku))bySku++;
+      else if(sourceName.has(normalized(row.name)))byName++;
+      else unmatched++;
+      const old=manualSku.get(sku);
+      if(old){manual++;if(Number(old.price)>0&&Math.abs(row.price-Number(old.price))>Number(old.price)*0.3)priceAlerts++;}
+    }
+    previewComparison={bySku,byName,manual,priceAlerts,unmatched};
+   }catch(error){
+    previewError='Mevcut katalogla eşleştirme yapılamadı: '+error.message;
+    status(previewError,true);
+   }
+  }
+  showPreview();
+ }catch(err){previewError=err.message;status('XML incelenemedi: '+err.message,true);showPreview();}
 }
-function showPreview(){
-const p=preview;if(!p)return;
-$('#xml-preview').innerHTML='<div class="panel-head"><div><span class="eyebrow">ADIM 02 / XML ÖN İZLEME</span><h2>'+esc(previewName)+'</h2></div><span class="pill '+(p.invalid?'red':'green')+'">'+(p.invalid?'Hata bulundu':'Doğrulandı')+'</span></div><div class="stat-grid compact"><div class="stat-card"><small>Okunan</small><strong>'+p.total+'</strong></div><div class="stat-card"><small>Geçerli</small><strong>'+p.valid+'</strong></div><div class="stat-card"><small>Hatalı</small><strong>'+p.invalid+'</strong></div><div class="stat-card"><small>Görselsiz</small><strong>'+p.imagesMissing+'</strong></div></div>'+(p.errors.length?'<div class="alert error">'+p.errors.slice(0,20).map(e=>'Satır '+e.line+': '+esc(e.reason)).join('<br>')+'</div>':'')+rows(p.rows.slice(0,20).map(x=>({...x,published:false})))+'<div class="preview-actions"><button id="export-csv" class="outline">CSV indir</button><button id="import-xml" class="primary" '+(p.invalid||!p.valid?'disabled':'')+'>Doğrulanan '+p.valid+' ürünü içe aktar</button></div><p class="hint">Yeni ürünler taslak kaydedilir. Mevcut SKU kayıtlarında yalnızca seçili alanlar güncellenir. %30 üstü fiyat farkı ek onay gerektirir.</p>';
-$('#export-csv').onclick=()=>{const blob=new Blob(['\ufeff'+csvFromRows(p.rows)],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='bakirmutfak-onizleme.csv';a.click();URL.revokeObjectURL(url)};
-$('#import-xml').onclick=async()=>{if(p.invalid||!p.valid)return;if(!confirm(p.valid+' ürün için Supabase ürün fiyatı ve stok güncellemesini başlatmak istiyor musun? Yeni ürünler taslak kalacak.'))return;const b=$('#import-xml');b.disabled=true;try{let res;try{res=await applyXmlImport(previewName,p.rows,false)}catch(err){if(/fiyat değişikliği|price change|%30|%30/i.test(err.message)){if(!confirm('Bazı ürünlerde %30 üzerinde fiyat değişikliği var. Buna rağmen uygulamak istiyor musunuz?'))return;res=await applyXmlImport(previewName,p.rows,true)}else throw err;}await refreshProducts();rememberTab('products',false);render();status('XML aktarımı tamamlandı: '+res.inserted+' yeni, '+res.updated+' güncellendi.')}catch(err){status('Aktarım tamamlanamadı: '+err.message,true)}finally{b.disabled=false}};
+function showPreview() {
+ const mount=$('#xml-preview');if(!mount)return;
+ const schema=previewStructure;
+ const report=preview;
+ const alerts=[];
+ if(previewError)alerts.push('<div class="alert error">'+esc(previewError)+'</div>');
+ let markup='<div class="panel-head"><div><span class="eyebrow">ADIM 02 / YALNIZCA ÖN İZLEME</span><h2>'+esc(previewName||'XML')+'</h2></div><span class="pill gray">İçe aktarma kilitli</span></div>';
+ markup+='<div class="info-note"><strong>GÜVENLİ İNCELEME MODU:</strong> Bu işlem hiçbir ürünü, stoğu veya fiyatı değiştirmez. XML üretici eşleştirmesi ve testleri tamamlanmadan aktarım başlatılmayacak.</div>';
+ if(schema){
+  markup+='<div class="stat-grid compact"><div class="stat-card"><small>Kök etiket</small><strong class="xml-schema-root">'+esc(schema.root)+'</strong></div>'+
+   '<div class="stat-card"><small>XML etiket sayısı</small><strong>'+schema.elementCount+'</strong></div>'+
+   '<div class="stat-card"><small>Olası ürün etiketi</small><strong class="xml-schema-root">'+esc(schema.likelyRow?.tag||'—')+'</strong></div>'+
+   '<div class="stat-card"><small>Olası ürün adedi</small><strong>'+esc(schema.likelyRow?.count||0)+'</strong></div></div>';
+  markup+='<details class="xml-fields" open><summary>Algılanan XML alanları</summary><div class="xml-field-chips">'+
+   schema.fields.slice(0,30).map(x=>'<code>'+esc(x)+'</code>').join('')+
+   '</div>'+(schema.rowCandidates.length>1?'<p class="hint">Diğer tekrar eden etiketler: '+schema.rowCandidates.slice(1,5).map(x=>esc(x.tag)+' ('+x.count+')').join(' · ')+'</p>':'')+'</details>';
+ }
+ markup+=alerts.join('');
+ if(report){
+  markup+='<div class="stat-grid compact"><div class="stat-card"><small>Toplam ürün</small><strong>'+report.total+'</strong></div>'+
+   '<div class="stat-card"><small>Doğrulanabilir</small><strong>'+report.valid+'</strong></div>'+
+   '<div class="stat-card"><small>Hatalı satır</small><strong>'+report.invalid+'</strong></div>'+
+   '<div class="stat-card"><small>Fotoğrafsız</small><strong>'+report.imagesMissing+'</strong></div></div>';
+  if(report.invalid)markup+='<div class="alert error">'+report.errors.slice(0,30).map(e=>'Ürün '+e.line+': '+esc(e.reason)).join('<br>')+'</div>';
+  if(previewComparison){
+   const c=previewComparison;
+   markup+='<h3>Mevcut katalog ile eşleşme kontrolü</h3><div class="stat-grid compact">'+
+   '<div class="stat-card"><small>Kaynak SKU eşleşmesi</small><strong>'+c.bySku+'</strong></div>'+
+   '<div class="stat-card"><small>İsim benzerliği (kontrol)</small><strong>'+c.byName+'</strong></div>'+
+   '<div class="stat-card"><small>Farklı / yeni aday</small><strong>'+c.unmatched+'</strong></div>'+
+   '<div class="stat-card"><small>Eski manuel SKU</small><strong>'+c.manual+'</strong></div></div>'+
+   (c.priceAlerts?'<div class="alert error">'+c.priceAlerts+' mevcut manuel üründe %30 üzeri fiyat farkı tespit edildi; ayrıca değerlendirme gerekir.</div>':'');
+  }
+  markup+='<h3>Örnek ürünler (ilk 20)</h3>'+rows(report.rows.slice(0,20).map(x=>({...x,published:false})))+
+   '<div class="preview-actions"><button id="export-csv" class="outline">CSV ön izlemeyi indir</button><button type="button" disabled class="primary">İçe aktarma kilitli · XML eşleştirmesi bekleniyor</button></div>'+
+   '<p class="hint">İlk aşamada hiçbir satış ürünü otomatik yayımlanmayacak. Mevcut 711 ürünle farklı kod/aynı isim tespitleri ayrıca gözden geçirilmeli. Sunucu aktarımı en fazla 500 ürünlük partiler desteklediğinden, büyük XML için işlem planı yapılmalı.</p>';
+ }else markup+='<p>Ürün verileri genel XML şemasından çözümlenemedi. Yukarıdaki etiket adlarıyla gerçek tedarikçiye özel alan eşleştirmesi hazırlanmalı. <strong>Hiçbir kayıt değiştirilmedi.</strong></p>';
+ mount.innerHTML=markup;
+ const csv=$('#export-csv');
+ if(csv)csv.onclick=()=>{
+   const blob=new Blob(['\ufeff'+csvFromRows(report.rows)],{type:'text/csv;charset=utf-8'});
+   const url=URL.createObjectURL(blob);
+   const a=document.createElement('a');a.href=url;a.download='bakirmutfak-xml-onizleme.csv';a.click();
+   setTimeout(()=>URL.revokeObjectURL(url),1000);
+ };
 }
+
 async function init(){
 if(!configured){loginScreen();return;}
 if(currentSession())try{user=await getAdmin();if(user)await refreshProducts();}catch(e){logout();user=null;}
