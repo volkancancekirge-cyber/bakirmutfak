@@ -1,7 +1,69 @@
-<!doctype html><html lang="tr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#242522"><meta name="robots" content="noindex,nofollow"><meta name="description" content="Bakır Mutfak Signature tasarım vitrini — geliştirme sürümü."><title>Bakır Mutfak — Signature</title></head><body>
-<div class="topline">KOLEKSİYON ÖN İZLEMESİ · SİPARİŞLER HENÜZ AÇIK DEĞİL</div>
-<div class="announcement"><span>BAKIRIN ZAMANSIZ HİKÂYESİ</span><a href="#/catalog">KOLEKSİYONLARI KEŞFET ↗</a></div>
-<header class="header"><div class="container header-inner"><a href="#/" class="logo"><span class="logo-icon">BM✳</span><span><b>BAKIR MUTFAK</b><small>ATÖLYEDEN SOFRAYA</small></span></a><nav class="nav"><a href="#/catalog">Tüm Ürünler</a><a href="#/catalog/cezve">Bakır Cezveler</a><a href="#/catalog/caydanlik">Çaydanlık</a><a href="#/catalog/tencere">Tencere & Sahan</a><a href="#/catalog/sofra">Sofra & Sunum</a></nav><div class="icons"><button id="search-toggle" aria-label="Ara">⌕</button><button id="cart-toggle" aria-label="Sepet">♡ <small id="cart-count">0</small></button><button id="menu-toggle" class="mobile-only" aria-label="Menüyü aç">☰</button></div></div><nav id="mobile-links" class="mobile-links" hidden><a href="#/catalog">Tüm ürünler</a><a href="#/catalog/cezve">Cezveler</a><a href="#/catalog/caydanlik">Çaydanlıklar</a><a href="#/catalog/tencere">Tencereler</a><a href="/admin.html">Yönetici girişi</a></nav><div id="search-section" class="search-section" hidden><div class="container"><input id="quick-search" aria-label="Ürün ara" type="search" placeholder="Cezve, tencere veya SKU ara..."/></div></div></header>
-<main id="app"></main>
-<footer class="footer"><div class="container footer-grid"><div><h3>BAKIR MUTFAK ✳</h3><p>Geleneksel bakır işçiliğinden ilham alan çağdaş mutfak koleksiyonları.</p><small>© 2026 Bakır Mutfak</small></div><div><h3>KEŞFEDİN</h3><a href="#/catalog">Tüm ürünler</a><a href="#/catalog/cezve">Cezveler</a><a href="#/catalog/tencere">Tencereler</a></div><div><h3>MAĞAZA</h3><a href="/admin.html">Yönetici paneli</a><small>Ödeme altyapısı şu an kapalı.</small><a href="/photo-credits.html">Görsel kaynakları</a></div></div></footer>
-<div id="shade" class="shade" hidden></div><aside id="cart" class="cart" aria-label="Sepet" aria-hidden="true"><div class="cart-head"><div><span class="eyebrow">BAKIR MUTFAK</span><h2>Sepetim</h2></div><button id="cart-close" aria-label="Kapat">✕</button></div><div id="cart-lines" class="cart-lines"></div><div class="cart-bottom"><div>Örnek ara toplam: <b id="cart-total">₺0</b></div><button disabled class="btn dark">Ödeme henüz aktif değil</button><small>Bu deneme ortamında gerçek sipariş oluşturulmaz.</small></div></aside><script type="module" src="/src/store.js"></script></body></html>
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#26312b">
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Bakır Mutfak — Cezve, çaydanlık, tencere, sofra ve dekoratif bakır ürünlerini koleksiyonlar halinde keşfedin. Fiyat ve sipariş sistemi hazırlık aşamasındadır.">
+<title>Bakır Mutfak | Hydra Commerce</title>
+</head>
+<body>
+<div class="hy-topbar"><div class="hy-container"><span>BAKIR MUTFAK · HYDRA COMMERCE</span><strong>KOLEKSİYON ÖN İZLEMESİ · SİPARİŞLER HENÜZ AÇIK DEĞİL</strong><span>Ürünlerinizi keşfedin, listenize kaydedin</span></div></div>
+<header class="hy-header">
+  <div class="hy-container hy-mainbar">
+    <a class="hy-brand" href="#/" aria-label="Bakır Mutfak ana sayfa">
+      <span class="hy-brand-symbol">BM</span>
+      <span class="hy-brand-text"><strong>BAKIR MUTFAK</strong><small>ATÖLYEDEN SOFRAYA</small></span>
+    </a>
+    <form class="hy-search" id="hy-search" role="search">
+      <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
+      <input id="hy-search-input" type="search" name="q" placeholder="Cezve, çaydanlık, tencere veya ürün kodu ara..." aria-label="Ürün ara" autocomplete="off" maxlength="120">
+      <button type="submit">Ara</button>
+    </form>
+    <div class="hy-header-actions">
+      <a href="#/favorites" aria-label="Favorilerim" title="Favorilerim"><svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20.5 8.5c0 4-8.5 10-8.5 10s-8.5-6-8.5-10a4.6 4.6 0 0 1 8.5-2.3 4.6 4.6 0 0 1 8.5 2.3Z"></path></svg><span>Favoriler</span><small class="hy-counter" id="hy-favorites-count">0</small></a>
+      <button id="hy-interest-trigger" type="button" aria-label="İlgi listem" title="İlgi listem"><svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M3 5h2l2 11h12l2-8H6"></path><circle cx="10" cy="20" r="1"></circle><circle cx="18" cy="20" r="1"></circle></svg><span>İlgi listem</span><small class="hy-counter" id="hy-interest-count">0</small></button>
+      <button id="hy-menu-toggle" class="hy-menu-toggle" type="button" aria-label="Kategorileri aç" aria-expanded="false"><svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"></path></svg></button>
+    </div>
+  </div>
+  <nav class="hy-nav" aria-label="Ürün kategorileri"><div class="hy-container">
+    <a class="hy-nav-all" href="#/catalog"><svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"></path></svg>Tüm ürünler</a>
+    <a href="#/catalog/cezve">Bakır cezveler</a>
+    <a href="#/catalog/caydanlik">Çaydanlıklar</a>
+    <a href="#/catalog/tencere">Tencere & tava</a>
+    <a href="#/catalog/sunum">Sofra & sunum</a>
+    <a href="#/catalog/dekor">Dekoratif bakır</a>
+    <a href="#/catalog/sofra">Diğer ürünler</a>
+    <span class="hy-nav-info">BAKIR MUTFAK KOLEKSİYONU</span>
+  </div></nav>
+  <nav class="hy-mobile-menu" id="hy-mobile-menu" aria-label="Mobil kategoriler" hidden>
+    <a href="#/catalog">Tüm ürünler <small>↗</small></a>
+    <a href="#/catalog/cezve">Bakır cezveler <small>↗</small></a>
+    <a href="#/catalog/caydanlik">Çaydanlıklar <small>↗</small></a>
+    <a href="#/catalog/tencere">Tencere & tava <small>↗</small></a>
+    <a href="#/catalog/sunum">Sofra & sunum <small>↗</small></a>
+    <a href="#/catalog/dekor">Dekoratif bakır <small>↗</small></a>
+    <a href="#/catalog/sofra">Diğer ürünler <small>↗</small></a>
+  </nav>
+</header>
+<div id="hy-app"></div>
+<footer class="hy-footer"><div class="hy-container">
+  <div class="hy-footer-main">
+    <div><a class="hy-brand" href="#/"><span class="hy-brand-symbol">BM</span><span class="hy-brand-text"><strong>BAKIR MUTFAK</strong><small>ATÖLYEDEN SOFRAYA</small></span></a><p>Bakır ürün dünyasını keşfedin. Sofranızdan mutfağınıza, aradığınız modeli bulun.</p></div>
+    <div><h3>KOLEKSİYONLAR</h3><nav><a href="#/catalog/cezve">Bakır cezveler</a><a href="#/catalog/caydanlik">Çaydanlıklar</a><a href="#/catalog/tencere">Tencere & tava</a><a href="#/catalog/sunum">Sofra & sunum</a></nav></div>
+    <div><h3>KEŞFEDİN</h3><nav><a href="#/catalog">Tüm ürünler</a><a href="#/catalog/dekor">Dekoratif bakır</a><a href="#/favorites">Favorilerim</a><a href="/photo-credits.html">Görsel kaynakları</a></nav></div>
+    <div><h3>BİLGİ</h3><p>Mağaza şu anda katalog ön izlemesidir. Fiyat, stok, ödeme ve sipariş altyapısı henüz aktif değildir.</p><nav><a href="/admin.html">Yönetici paneli</a></nav></div>
+  </div>
+  <div class="hy-footer-bottom"><span>© 2026 Bakır Mutfak · Hydra Commerce</span><span>Ürün görselleri izinli tedarikçi kataloğundan aktarılmıştır.</span></div>
+</div></footer>
+<div id="hy-shade" class="hy-shade" hidden></div>
+<aside id="hy-drawer" class="hy-drawer" aria-hidden="true" aria-label="İlgi listem">
+  <div class="hy-drawer-head"><div><span class="hy-overline">BEĞENDİĞİNİZ ÜRÜNLER</span><h2>İlgi listem <small id="hy-drawer-count">0</small></h2></div><button id="hy-drawer-close" aria-label="Listeyi kapat" type="button">✕</button></div>
+  <div id="hy-drawer-items" class="hy-drawer-items"></div>
+  <div class="hy-drawer-bottom"><button class="hy-btn hy-btn-primary" id="hy-copy-list" type="button">Ürün kodlarıyla listeyi kopyala ↗</button><p>Bu liste sipariş oluşturmaz. Ürünler için fiyat ve stok doğrulaması devam ediyor.</p></div>
+</aside>
+<div class="hy-lightbox" id="hy-lightbox" hidden><button type="button" id="hy-lightbox-close" aria-label="Görseli kapat">✕</button><img id="hy-lightbox-image" alt=""></div>
+<script type="module" src="/src/hydra.js"></script>
+</body>
+</html>
