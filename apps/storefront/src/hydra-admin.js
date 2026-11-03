@@ -30,6 +30,9 @@ export async function mountHydraAdmin(workspace){
      '<div class="ha-order-row"><label><input data-category-enabled="'+x.id+'" type="checkbox" '+(x.enabled?'checked':'')+'> '+esc(x.label)+'</label>'+
      '<label>Sıra <select data-category-order="'+x.id+'">'+Array.from({length:6},(_,i)=>'<option value="'+i+'" '+(x.position===i?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></div>'
     ).join('')+'</div><button class="primary" type="submit">Vitrin ayarlarını kaydet ↗</button></form>';
+  pane.querySelector('#ha-hero-form').addEventListener('invalid',event=>{
+    notice('Lütfen formdaki alanı kontrol edin: '+(event.target?.validationMessage||'Geçersiz bilgi.'),true);
+  },true);
   pane.querySelector('#ha-hero-form').onsubmit=async event=>{
     event.preventDefault();const form=event.currentTarget;const b=form.querySelector('button[type=submit]');const fd=new FormData(form);
     const selections=options.map(([id])=>({id,enabled:!!form.querySelector('[data-category-enabled="'+id+'"]').checked,
@@ -40,8 +43,9 @@ export async function mountHydraAdmin(workspace){
       await saveHydraSettings({hero_title:String(fd.get('hero_title')).trim(),
        hero_subtitle:String(fd.get('hero_subtitle')).trim(),hero_category:String(fd.get('hero_category')),
        featured_categories:selections.map(x=>x.id)});
-      notice('Hydra ana sayfa ayarları kaydedildi. Mağaza yenilenince görünür.');
-    }catch(e){notice('Kaydedilemedi: '+e.message,true);}
+      notice('✓ Hydra ana sayfa ayarları Supabase’e kaydedildi ve yeniden okunarak doğrulandı. Mağazayı yenileyerek görebilirsin.');
+      b.textContent='✓ Kaydedildi';
+    }catch(e){notice('✕ Kaydedilemedi: '+e.message,true);b.textContent='Tekrar dene ↻';}
     finally{b.disabled=false;}
   };
   const state={query:'',page:1,group:'all'};
@@ -87,10 +91,11 @@ export async function mountHydraAdmin(workspace){
       const update={display_category:fd.get('display_category')||null,featured:fd.has('featured'),
         hidden_from_storefront:fd.has('hidden_from_storefront'),sort_priority:priority};
       b.disabled=true;try{
-        await saveHydraMerchandising(id,update);
-        over.set(id,{product_id:id,...update});
-        notice('Ürün vitrin ayarı kaydedildi. '+rows.find(x=>x.id===id)?.name);
-      }catch(err){notice('Ürün kaydedilemedi: '+err.message,true);}
+        const confirmed=await saveHydraMerchandising(id,update);
+        over.set(id,confirmed);
+        notice('✓ Ürün vitrin ayarı Supabase’den doğrulandı: '+rows.find(x=>x.id===id)?.name);
+        b.textContent='✓ Kaydedildi';
+      }catch(err){notice('✕ Ürün kaydedilemedi: '+err.message,true);b.textContent='✕ Tekrar dene';b.title=err.message;}
       finally{b.disabled=false;}
     });
   }
