@@ -12,7 +12,7 @@ function catalogFixtures(){
   ['sofra',6,'Bakır Mumluk Dekor']
  ]){
   for(let j=0;j<n;j++){
-   const id='test-product-'+String(i++).padStart(3,'0');
+   const id='11111111-1111-4111-8111-'+String(i++).padStart(12,'0');
    rows.push({id,source_url:'https://bakirbul.com/urun/'+id+'/',source_host:'bakirbul.com',
     supplier_sku:'TEST-'+i,name:prefix+' '+(j+1),category:type,image_urls:[photoUrl,photoUrl]});
   }
@@ -28,6 +28,9 @@ test.beforeEach(async({page})=>{
   const headers={'access-control-allow-origin':'*','access-control-allow-headers':'apikey,authorization,content-type','access-control-allow-methods':'GET,OPTIONS','content-type':'application/json'};
   if(request.method()==='OPTIONS')return route.fulfill({status:204,headers});
   const url=request.url();
+  if(url.includes('bm_hydra_settings?'))return route.fulfill({status:200,headers,body:JSON.stringify([{id:1,hero_title:'Bakırın en güzel seçkisi.',hero_subtitle:'Her kategoriye özel bakır ürünleri keşfedin.',hero_category:'cezve',featured_categories:['caydanlik','cezve','tencere','sunum','dekor']}])});
+  if(url.includes('bm_hydra_merchandising?'))return route.fulfill({status:200,headers,body:'[]'});
+  if(url.includes('/functions/v1/hydra-quote-request'))return route.fulfill({status:200,headers,body:JSON.stringify({ok:true,reference:'22222222-2222-4222-8222-222222222222'})});
   if(url.includes('bm_products?'))return route.fulfill({status:200,headers,body:'[]'});
   if(url.includes('bm_source_catalog?'))return route.fulfill({status:200,headers,body:JSON.stringify(products)});
   return route.fulfill({status:404,headers,body:'{"message":"Not mocked"}'});
@@ -80,7 +83,7 @@ test('Search, category, favorite, and interest-list flows',async({page})=>{
  await expect(page.locator('#hy-copy-list')).toBeEnabled();
 });
 test('Real catalog item shows no invented price or checkout',async({page})=>{
- await page.goto('/#/product/catalog-test-product-000');
+ await page.goto('/#/product/catalog-11111111-1111-4111-8111-000000000000');
  await expect(page.locator('.hy-detail-layout h1')).toContainText('Klasik Bakır Cezve');
  await expect(page.locator('.hy-detail-price')).toContainText('Fiyat bilgisi hazırlanıyor');
  await expect(page.locator('.hy-gallery-thumbs button')).toHaveCount(2);
@@ -94,4 +97,43 @@ test('Admin remains protected by login gate',async({page})=>{
  await page.goto('/admin.html');
  await expect(page.locator('#login-form')).toBeVisible();
  await expect(page.locator('.app-shell')).toHaveCount(0);
+});
+
+
+test('Hydra settings drive category order and hero heading',async({page})=>{
+ await page.goto('/');
+ await expect(page.locator('.hy-hero h1')).toContainText('Bakırın en güzel seçkisi.');
+ await expect(page.locator('.hy-category-grid .hy-category-tile').first()).toContainText('Bakır çaydanlıklar');
+ await expect(page.locator('.hy-shelf')).toHaveCount(5);
+});
+test('Smart search suggests matching products',async({page})=>{
+ await page.goto('/');
+ await page.locator('#hy-search-input').fill('Klasik Bakır Cezve');
+ await expect(page.locator('#hy-search-suggestions')).toBeVisible();
+ await expect(page.locator('#hy-search-suggestions a[href^="#/product/"]').first()).toContainText('Klasik Bakır Cezve');
+});
+test('Compare two products without checkout',async({page})=>{
+ await page.goto('/#/catalog/cezve');
+ await expect(page.locator('.hy-catalog-grid .hy-product')).toHaveCount(24);
+ await page.locator('.hy-catalog-grid [data-compare]').nth(0).click();
+ await page.locator('.hy-catalog-grid [data-compare]').nth(1).click();
+ await expect(page.locator('#hy-compare-tray')).toBeVisible();
+ await page.locator('#hy-compare-launch').click();
+ await expect(page.locator('.hy-compare-table')).toBeVisible();
+ await expect(page.locator('.hy-compare-table tr').first().locator('td')).toHaveCount(2);
+ await expect(page.getByRole('button',{name:/Satın al/})).toHaveCount(0);
+});
+test('Interest list generates explicit-consent quote request',async({page})=>{
+ await page.setViewportSize({width:390,height:850});
+ await page.goto('/#/catalog/cezve');
+ await page.locator('.hy-catalog-grid [data-interest]').first().click();
+ await page.locator('#hy-interest-trigger').click();
+ await page.locator('#hy-open-quote').click();
+ await expect(page.locator('#hy-quote-modal')).toBeVisible();
+ await page.locator('#hy-quote-form input[name="name"]').fill('Test Kullanıcı');
+ await page.locator('#hy-quote-form input[name="email"]').fill('test@example.com');
+ await page.locator('#hy-quote-form input[name="consent"]').check();
+ await page.locator('#hy-quote-form button[type="submit"]').click();
+ await expect(page.locator('#hy-quote-feedback')).toContainText('Talebiniz başarıyla kaydedildi');
+ await expect(page.locator('#hy-quote-form')).toBeHidden();
 });
