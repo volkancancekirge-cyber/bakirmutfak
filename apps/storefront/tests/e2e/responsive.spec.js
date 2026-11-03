@@ -134,6 +134,50 @@ test('Hydra settings drive category order and hero heading',async({page})=>{
  await expect(page.locator('.hy-category-grid .hy-category-tile').first()).toContainText('Bakır çaydanlıklar');
  await expect(page.locator('.hy-shelf')).toHaveCount(5);
 });
+test('Hydra category order is identical in main catalog pills, sidebar and both navs',async({page})=>{
+ await page.goto('/#/catalog/cezve');
+ const expected=['all','caydanlik','cezve','tencere','sunum','dekor','sofra'];
+ const pills=await page.locator('.hy-category-pills a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
+ expect(pills).toEqual(expected);
+ const sidebar=await page.locator('.hy-sidebar nav a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
+ expect(sidebar).toEqual(expected);
+ const desktop=await page.locator('.hy-nav .hy-container a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ expect(desktop).toEqual(expected.slice(1));
+ const mobile=await page.locator('#hy-mobile-menu a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ expect(mobile).toEqual(expected.slice(1));
+ await page.locator('#hy-filter-toggle').click();
+ const filter=await page.locator('.hy-mobile-filter-panel a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
+ expect(filter).toEqual(expected);
+});
+test('Saving a new Hydra rank immediately changes storefront order after reload',async({page})=>{
+ await page.goto('/admin.html#/hydra');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await expect(page.locator('#ha-hero-form')).toBeVisible();
+ await expect(page.getByText('Hydra vitrin yönetimi yükleniyor…')).toHaveCount(0);
+ const current=await page.locator('.ha-order-grid [data-category-row]').evaluateAll(rows=>rows.map(x=>x.dataset.categoryRow));
+ expect(current.slice(0,3)).toEqual(['caydanlik','cezve','tencere']);
+ await page.locator('[data-category-order="tencere"]').selectOption('0');
+ const positions=await page.locator('.ha-order-grid [data-category-row]').evaluateAll(rows=>rows.map(x=>({
+  id:x.dataset.categoryRow,
+  selected:x.querySelector('input[type=checkbox]').checked,
+  rank:x.querySelector('select').value
+ })));
+ expect(positions.filter(x=>x.selected).slice(0,3).map(x=>x.id)).toEqual(['tencere','caydanlik','cezve']);
+ expect(positions.filter(x=>x.selected).map(x=>x.rank)).toEqual(['0','1','2','3','4']);
+ expect(positions.filter(x=>!x.selected).every(x=>x.rank===''&&x.selected===false)).toBe(true);
+ await page.locator('#ha-hero-form button[type="submit"]').click();
+ await expect(page.locator('#ha-alert')).toContainText('yeniden okunarak doğrulandı');
+ await page.goto('/#/catalog/cezve');
+ const fromPills=await page.locator('.hy-category-pills a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
+ expect(fromPills.slice(0,4)).toEqual(['all','tencere','caydanlik','cezve']);
+ const topDesktop=await page.locator('.hy-nav a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ expect(topDesktop.slice(0,3)).toEqual(['tencere','caydanlik','cezve']);
+ await page.reload();
+ const persistedPills=await page.locator('.hy-category-pills a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
+ expect(persistedPills.slice(0,4)).toEqual(['all','tencere','caydanlik','cezve']);
+});
 test('Smart search suggests matching products',async({page})=>{
  await page.goto('/');
  await page.locator('#hy-search-input').fill('Klasik Bakır Cezve');
