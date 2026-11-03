@@ -252,7 +252,7 @@ export async function saveHydraSettings(values){
  return reread;
 }
 export async function adminSourceCatalog(){
- return fetchApi('/rest/v1/bm_source_catalog?select=id,name,category,source_host,supplier_sku,image_urls,visibility&order=created_at.desc&limit=5000',{},true);
+ return fetchApi('/rest/v1/bm_source_catalog?select=id,name,category,source_host,source_url,supplier_sku,image_urls,visibility&order=created_at.desc&limit=5000',{},true);
 }
 export async function saveHydraMerchandising(product_id,values){
  if(!/^[0-9a-f-]{36}$/i.test(product_id))throw new Error('Ürün kimliği geçersiz.');
@@ -294,4 +294,39 @@ export async function submitQuoteRequest(data){
  return fetchApi('/functions/v1/hydra-quote-request',{
   method:'POST',body:JSON.stringify(data)
  });
+}
+
+
+// Verified public catalog copy; anonymous visitors never receive draft text.
+export async function publicCatalogContent(){
+ return fetchApi('/rest/v1/bm_product_content?select=product_id,short_description,description,specifications,source_kind,review_status&review_status=eq.approved&limit=5000');
+}
+export async function adminCatalogContent(){
+ return fetchApi('/rest/v1/bm_product_content?select=product_id,short_description,description,specifications,source_kind,review_status,updated_at&limit=5000',{},true);
+}
+export async function saveCatalogContent(product_id,input){
+ if(!/^[0-9a-f-]{36}$/i.test(product_id))throw new Error('Ürün kimliği geçersiz.');
+ const description=String(input.description||'').trim();
+ const short_description=String(input.short_description||'').trim();
+ const status=input.review_status;
+ const kind=input.source_kind;
+ const specifications=input.specifications||{};
+ if(!['draft','approved'].includes(status))throw new Error('İçerik durumu geçersiz.');
+ if(!['supplier_page','supplier_document','manual_review'].includes(kind))throw new Error('Kaynak tipi geçersiz.');
+ if(description.length>6000||short_description.length>700||status==='approved'&&description.length<80)
+    throw new Error('Onaylı açıklama en az 80, en fazla 6000 karakter olmalı.');
+ if(!specifications||typeof specifications!=='object'||Array.isArray(specifications)||Object.keys(specifications).length>18)
+    throw new Error('Teknik özellikler en fazla 18 satır olabilir.');
+ const data={product_id,short_description,description,specifications,source_kind:kind,review_status:status,updated_at:new Date().toISOString()};
+ const saved=await fetchApi('/rest/v1/bm_product_content?on_conflict=product_id',{
+  method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},body:JSON.stringify([data])
+ },true);
+ if(!Array.isArray(saved)||saved.length!==1||saved[0].product_id!==product_id)
+   throw new Error('Ürün açıklaması veritabanına kaydedilmedi.');
+ const rows=await fetchApi('/rest/v1/bm_product_content?select=product_id,short_description,description,specifications,source_kind,review_status&product_id=eq.'+product_id,{},true);
+ const row=rows?.[0];
+ if(!row||row.description!==description||row.short_description!==short_description||row.review_status!==status||
+    row.source_kind!==kind||JSON.stringify(row.specifications)!==JSON.stringify(specifications))
+    throw new Error('Ürün açıklaması kaydedilmiş görünse de yeniden okuma doğrulaması başarısız.');
+ return row;
 }
