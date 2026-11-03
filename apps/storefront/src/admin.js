@@ -10,7 +10,45 @@ import {parseSupplierXml,csvFromRows} from './xml.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=v=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(v)||0);
-let user=null,products=[],audit=[],sources=[],preview=null,previewName='',tab='dashboard';
+const ADMIN_TABS = new Set(['dashboard','products','xml','sources','hydra','quotes','history']);
+const ADMIN_TAB_KEY = 'bakirmutfak.admin.active-tab';
+function tabFromHash() {
+  const path=decodeURIComponent((location.hash||'').replace(/^#\/?/,'')).split(/[/?]/)[0];
+  return ADMIN_TABS.has(path)?path:null;
+}
+function restoredTab() {
+  const saved=(()=>{try{return sessionStorage.getItem(ADMIN_TAB_KEY)}catch{return null}})();
+  return tabFromHash()||(ADMIN_TABS.has(saved)?saved:'dashboard');
+}
+let user=null,products=[],audit=[],sources=[],preview=null,previewName='',tab=restoredTab();
+function rememberTab(next,addHistory=true) {
+  if(!ADMIN_TABS.has(next))return;
+  tab=next;
+  try{sessionStorage.setItem(ADMIN_TAB_KEY,tab)}catch{}
+  if(location.hash!=='#/'+tab) {
+    const href=location.pathname+location.search+'#/'+tab;
+    if(addHistory)history.pushState({adminTab:tab},'',href);
+    else history.replaceState({adminTab:tab},'',href);
+  }
+}
+async function goToTab(next,addHistory=true) {
+  if(!ADMIN_TABS.has(next))return;
+  rememberTab(next,addHistory);
+  if(!user)return;
+  if(next==='history'){
+    try{audit=await productAudit()}catch(e){render();status('İşlem geçmişi yüklenemedi: '+e.message,true);return}
+  }
+  if(next==='sources'){
+    try{sources=await researchSources()}catch(e){render();status('Kaynak listesi yüklenemedi: '+e.message,true);return}
+  }
+  if(tab===next)render();
+}
+function restoreHistoryTab() {
+  const next=tabFromHash()||restoredTab();
+  if(next!==tab)goToTab(next,false);
+}
+window.addEventListener('popstate',restoreHistoryTab);
+window.addEventListener('hashchange',restoreHistoryTab);
 function status(message,error=false){const el=$('#status');if(el){el.textContent=message;el.className=error?'alert error':'alert';el.hidden=false;}}
 function shell(content){
 $('#admin-app').innerHTML='<div class="app-shell"><aside class="sidebar"><a class="mark" href="/"><span>BM✳</span><strong>BAKIR MUTFAK<small>YÖNETİM SİSTEMİ</small></strong></a><div class="subhead">ÇALIŞMA ALANI</div><button data-tab="dashboard" class="'+(tab==='dashboard'?'active':'')+'">▦ &nbsp; Genel Bakış</button><button data-tab="products" class="'+(tab==='products'?'active':'')+'">◈ &nbsp; Ürün Yönetimi</button><button data-tab="xml" class="'+(tab==='xml'?'active':'')+'">⇅ &nbsp; XML Tedarikçiler</button><button data-tab="sources" class="'+(tab==='sources'?'active':'')+'">⌕ &nbsp; İnternetten Ürün Araştır</button><button data-tab="hydra" class="'+(tab==='hydra'?'active':'')+'">✦ &nbsp; Hydra Vitrin</button><button data-tab="quotes" class="'+(tab==='quotes'?'active':'')+'">✉ &nbsp; Teklif Talepleri</button><button data-tab="history" class="'+(tab==='history'?'active':'')+'">◷ &nbsp; İşlem Geçmişi</button><div class="sidebar-bottom"><a href="/" target="_blank" rel="noopener">↗ Mağazaya git</a><button id="logout">Oturumu kapat</button></div></aside><main class="workspace"><header class="workspace-header"><div><span class="eyebrow">BAKIR MUTFAK · YÖNETİCİ PANELİ</span><h1>'+({dashboard:'Genel Bakış',products:'Ürün Yönetimi',xml:'XML Ürün Aktarımı',history:'Ürün İşlem Geçmişi',sources:'Ürün Kaynak Araştırması',hydra:'Hydra Vitrin Yönetimi',quotes:'Müşteri Teklif Talepleri'}[tab])+'</h1></div><div class="profile"><span class="profile-dot">✳</span><small>'+esc(user.email||'Yönetici')+'</small></div></header><div id="status" class="alert" hidden></div>'+content+'<footer class="workspace-footer">Geliştirme sürümü. Sipariş, ödeme ve otomatik XML senkronizasyonu henüz aktif değildir.</footer></main></div>';
@@ -80,8 +118,8 @@ function render(){
 if(!user){loginScreen();return;}
 const content=tab==='products'?productsView():tab==='xml'?xmlView():tab==='history'?historyView():tab==='sources'?sourceView():tab==='hydra'?'<section class="panel"><h2>Hydra vitrin yönetimi yükleniyor…</h2></section>':tab==='quotes'?'<section class="panel"><h2>Müşteri talepleri yükleniyor…</h2></section>':dashboard();
 shell(content);
-$('#logout').onclick=()=>{logout();user=null;preview=null;loginScreen()};
-document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',async()=>{tab=btn.dataset.tab;if(tab==='history'){try{audit=await productAudit()}catch(e){render();status('İşlem geçmişi yüklenemedi: '+e.message,true);return}}if(tab==='sources'){try{sources=await researchSources()}catch(e){render();status('Kaynak listesi yüklenemedi: '+e.message,true);return}}render()}));
+$('#logout').onclick=()=>{logout();user=null;preview=null;rememberTab('dashboard',false);loginScreen()};
+document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>goToTab(btn.dataset.tab)));
 if(tab==='products') {
   document.querySelectorAll('[data-publish]').forEach(el=>el.onchange=async()=>{el.disabled=true;try{await setPublished(el.dataset.publish,el.checked);await refreshProducts();render();status('Yayın durumu güncellendi.')}catch(ex){el.checked=!el.checked;status(ex.message,true)}finally{el.disabled=false}});
   $('#add-product').onclick=()=>openEditor(null);
@@ -116,11 +154,14 @@ function showPreview(){
 const p=preview;if(!p)return;
 $('#xml-preview').innerHTML='<div class="panel-head"><div><span class="eyebrow">ADIM 02 / XML ÖN İZLEME</span><h2>'+esc(previewName)+'</h2></div><span class="pill '+(p.invalid?'red':'green')+'">'+(p.invalid?'Hata bulundu':'Doğrulandı')+'</span></div><div class="stat-grid compact"><div class="stat-card"><small>Okunan</small><strong>'+p.total+'</strong></div><div class="stat-card"><small>Geçerli</small><strong>'+p.valid+'</strong></div><div class="stat-card"><small>Hatalı</small><strong>'+p.invalid+'</strong></div><div class="stat-card"><small>Görselsiz</small><strong>'+p.imagesMissing+'</strong></div></div>'+(p.errors.length?'<div class="alert error">'+p.errors.slice(0,20).map(e=>'Satır '+e.line+': '+esc(e.reason)).join('<br>')+'</div>':'')+rows(p.rows.slice(0,20).map(x=>({...x,published:false})))+'<div class="preview-actions"><button id="export-csv" class="outline">CSV indir</button><button id="import-xml" class="primary" '+(p.invalid||!p.valid?'disabled':'')+'>Doğrulanan '+p.valid+' ürünü içe aktar</button></div><p class="hint">Yeni ürünler taslak kaydedilir. Mevcut SKU kayıtlarında yalnızca seçili alanlar güncellenir. %30 üstü fiyat farkı ek onay gerektirir.</p>';
 $('#export-csv').onclick=()=>{const blob=new Blob(['\ufeff'+csvFromRows(p.rows)],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='bakirmutfak-onizleme.csv';a.click();URL.revokeObjectURL(url)};
-$('#import-xml').onclick=async()=>{if(p.invalid||!p.valid)return;if(!confirm(p.valid+' ürün için Supabase ürün fiyatı ve stok güncellemesini başlatmak istiyor musun? Yeni ürünler taslak kalacak.'))return;const b=$('#import-xml');b.disabled=true;try{let res;try{res=await applyXmlImport(previewName,p.rows,false)}catch(err){if(/fiyat değişikliği|price change|%30|%30/i.test(err.message)){if(!confirm('Bazı ürünlerde %30 üzerinde fiyat değişikliği var. Buna rağmen uygulamak istiyor musunuz?'))return;res=await applyXmlImport(previewName,p.rows,true)}else throw err;}await refreshProducts();tab='products';render();status('XML aktarımı tamamlandı: '+res.inserted+' yeni, '+res.updated+' güncellendi.')}catch(err){status('Aktarım tamamlanamadı: '+err.message,true)}finally{b.disabled=false}};
+$('#import-xml').onclick=async()=>{if(p.invalid||!p.valid)return;if(!confirm(p.valid+' ürün için Supabase ürün fiyatı ve stok güncellemesini başlatmak istiyor musun? Yeni ürünler taslak kalacak.'))return;const b=$('#import-xml');b.disabled=true;try{let res;try{res=await applyXmlImport(previewName,p.rows,false)}catch(err){if(/fiyat değişikliği|price change|%30|%30/i.test(err.message)){if(!confirm('Bazı ürünlerde %30 üzerinde fiyat değişikliği var. Buna rağmen uygulamak istiyor musunuz?'))return;res=await applyXmlImport(previewName,p.rows,true)}else throw err;}await refreshProducts();rememberTab('products',false);render();status('XML aktarımı tamamlandı: '+res.inserted+' yeni, '+res.updated+' güncellendi.')}catch(err){status('Aktarım tamamlanamadı: '+err.message,true)}finally{b.disabled=false}};
 }
 async function init(){
 if(!configured){loginScreen();return;}
 if(currentSession())try{user=await getAdmin();if(user)await refreshProducts();}catch(e){logout();user=null;}
+rememberTab(tab,false);
+if(user&&tab==='history')try{audit=await productAudit()}catch(e){console.warn('İşlem geçmişi açılamadı:',e.message)}
+if(user&&tab==='sources')try{sources=await researchSources()}catch(e){console.warn('Kaynak listesi açılamadı:',e.message)}
 render();
 }
 init();
