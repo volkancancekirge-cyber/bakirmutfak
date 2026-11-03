@@ -463,3 +463,19 @@ a{color:inherit;text-decoration:none}
  .hy-compare-tray{padding:10px 12px}
  .hy-compare-tray button{padding:9px 10px}
 }
+
+
+/* Verified product story / provenance */
+.hy-description-body{font-size:13px;line-height:1.95;color:#625c54}
+.hy-description-body p{margin:12px 0;max-width:620px}
+.hy-spec-list{margin:16px 0;border:1px solid #eee7de;border-radius:9px;overflow:hidden}
+.hy-spec-list>div{display:grid;grid-template-columns:41% 1fr;gap:12px;align-items:center;border-bottom:1px solid #eee7de;padding:13px 15px;font-size:12px}
+.hy-spec-list>div:last-child{border-bottom:0}
+.hy-spec-list>div:nth-child(odd){background:#fbf9f5}
+.hy-spec-list dt{font-weight:800;color:#645747}
+.hy-spec-list dd{margin:0;color:#433d34}
+.hy-content-origin{font-size:10px!important;color:#897b6b!important;font-style:italic}
+.hy-source-link{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:22px 0;background:#f7f3ed;border:1px solid #ede4d9;padding:16px;border-radius:9px;font-size:12px}
+.hy-source-link span{color:#73685c}
+.hy-source-link a{font-weight:800;color:#8b5335;white-space:nowrap;text-decoration:underline;text-underline-offset:3px}
+@media(max-width:650px){.hy-source-link{flex-wrap:wrap}.hy-spec-list>div{grid-template-columns:38% 1fr;font-size:11px;padding:11px 10px}}
