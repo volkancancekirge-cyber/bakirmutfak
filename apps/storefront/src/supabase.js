@@ -204,3 +204,45 @@ export async function bulkCatalogAction(payload) {
 export async function bulkQueueStatus(){
   return fetchApi('/rest/v1/bm_catalog_queue?select=source_host,status&order=created_at.asc&limit=5000',{},true);
 }
+
+
+// Hydra public merchandising. Category overrides never modify supplier feed data.
+export async function hydraSettings(){
+ const rows=await fetchApi('/rest/v1/bm_hydra_settings?select=id,hero_title,hero_subtitle,hero_category,featured_categories&id=eq.1');
+ return rows?.[0]||null;
+}
+export async function hydraMerchandising(){
+ return fetchApi('/rest/v1/bm_hydra_merchandising?select=product_id,display_category,featured,sort_priority,hidden_from_storefront&limit=5000');
+}
+export async function saveHydraSettings(values){
+ return fetchApi('/rest/v1/bm_hydra_settings?id=eq.1',{
+  method:'PATCH',headers:{Prefer:'return=representation'},
+  body:JSON.stringify({...values,updated_at:new Date().toISOString()})
+ },true);
+}
+export async function adminSourceCatalog(){
+ return fetchApi('/rest/v1/bm_source_catalog?select=id,name,category,source_host,supplier_sku,image_urls,visibility&order=created_at.desc&limit=5000',{},true);
+}
+export async function saveHydraMerchandising(product_id,values){
+ if(!/^[0-9a-f-]{36}$/i.test(product_id))throw new Error('Ürün kimliği geçersiz.');
+ return fetchApi('/rest/v1/bm_hydra_merchandising?on_conflict=product_id',{
+  method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},
+  body:JSON.stringify([{product_id,...values,updated_at:new Date().toISOString()}])
+ },true);
+}
+export async function adminQuoteRequests(){
+ return fetchApi('/rest/v1/bm_quote_requests?select=id,contact_name,contact_email,contact_phone,message,items,status,admin_notes,created_at&order=created_at.desc&limit=100',{},true);
+}
+export async function updateQuoteRequest(id,status,admin_notes){
+ if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Geçersiz teklif kimliği.');
+ if(!['new','reviewing','answered','closed'].includes(status))throw new Error('Geçersiz talep durumu.');
+ return fetchApi('/rest/v1/bm_quote_requests?id=eq.'+id,{
+  method:'PATCH',headers:{Prefer:'return=representation'},
+  body:JSON.stringify({status,admin_notes:String(admin_notes||'').slice(0,3000),updated_at:new Date().toISOString()})
+ },true);
+}
+export async function submitQuoteRequest(data){
+ return fetchApi('/functions/v1/hydra-quote-request',{
+  method:'POST',body:JSON.stringify(data)
+ });
+}
