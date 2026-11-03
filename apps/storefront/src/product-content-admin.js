@@ -1,5 +1,5 @@
 // Curate product descriptions from approved suppliers. Drafts are invisible to visitors.
-import {adminSourceCatalog,adminCatalogContent,saveCatalogContent} from './supabase.js';
+import {adminSourceCatalog,adminCatalogContent,saveCatalogContent,previewSupplierContent} from './supabase.js';
 import {fallbackProductContent,titleFacts} from './product-content.js';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const labels={cezve:'Bakır cezveler',caydanlik:'Çaydanlık',tencere:'Tencere & Tava',sofra:'Sofra & Sunum'};
@@ -59,7 +59,7 @@ export async function mountProductContentAdmin(workspace){
     Object.entries(record.specifications).map(([key,value])=>key+': '+value).join('\n'):'';
   const editor=root.querySelector('#bm-content-editor');
   editor.innerHTML='<div class="bm-content-editor-head"><span class="eyebrow">ÜRÜN AÇIKLAMASI</span><h3>'+esc(p.name)+'</h3><small>SKU: '+esc(p.supplier_sku||'—')+'</small></div>'+
-   (url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" class="outline bm-content-source-link">Ürünün tedarikçi sayfasını aç ↗</a>':'')+
+   (url?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer" class="outline bm-content-source-link">Ürünün tedarikçi sayfasını aç ↗</a><button type="button" class="outline" id="bm-source-preview">Kaynak açıklamasını getir ⇣</button>':'')+
    '<details class="bm-title-facts" open><summary>Ürün başlığından okunabilen bilgiler</summary>'+
    (helper.facts.length?helper.facts.map(f=>'<span>'+esc(f.label)+': '+esc(f.value)+'</span>').join(' '):'<p>Başlıktan kesin ölçü/işçilik verisi çıkarılamadı.</p>')+
    '<p>Bu etiketler kaynak başlığından alındı; bağımsız teknik doğrulama değildir.</p></details>'+
@@ -71,6 +71,24 @@ export async function mountProductContentAdmin(workspace){
    '<label class="bm-approval-check"><input type="checkbox" id="bm-content-confirm"> Bu açıklamadaki teknik iddiaları kaynakta kontrol ettim.</label>'+
    '<div class="bm-content-editor-buttons"><button class="outline" type="submit" data-save-mode="draft">Taslak kaydet</button><button class="primary" type="submit" data-save-mode="approved">Kontrol ettim, yayımla ↗</button></div>'+
    '<p class="hint">Satış fiyatı ve stok doğrulaması bundan bağımsızdır. Açıklamayı onaylamak ürünü satışa açmaz.</p></form>';
+  const previewButton=editor.querySelector('#bm-source-preview');
+  if(previewButton)previewButton.onclick=async()=>{
+    const currentForm=editor.querySelector('#bm-content-form');
+    const desc=currentForm.querySelector('textarea[name="description"]');
+    if(desc.value.trim()&&!confirm('Mevcut açıklama alanı kaynak taslağı ile değişecek. Devam edilsin mi?'))return;
+    previewButton.disabled=true;previewButton.textContent='Kaynak okunuyor…';
+    try{
+      const source=await previewSupplierContent(id);
+      desc.value=source.description.slice(0,6000);
+      currentForm.querySelector('textarea[name="short_description"]').value=String(source.short_description||'').slice(0,700);
+      const pairs=Object.entries(source.specifications||{}).slice(0,18).filter(([key,value])=>key&&value);
+      currentForm.querySelector('textarea[name="specifications"]').value=pairs.map(([key,value])=>key+': '+value).join('\n');
+      currentForm.querySelector('select[name="source_kind"]').value='supplier_page';
+      editor.querySelector('#bm-content-confirm').checked=false;
+      notice('✓ Kaynak sayfasından açıklama taslağı getirildi. Henüz kaydedilmedi veya yayımlanmadı; metni ve teknik özellikleri doğrula.');
+    }catch(e){notice('Kaynak açıklaması otomatik getirilemedi: '+e.message+' Kaynak sayfasını açıp bilgileri manuel girebilirsin.',true);}
+    finally{previewButton.disabled=false;previewButton.textContent='Kaynak açıklamasını getir ⇣';}
+  };
   const form=editor.querySelector('#bm-content-form');
   let mode='draft';
   form.querySelectorAll('[data-save-mode]').forEach(b=>b.addEventListener('click',()=>mode=b.dataset.saveMode));
