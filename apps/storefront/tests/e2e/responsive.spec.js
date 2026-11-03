@@ -14,7 +14,7 @@ function catalogFixtures(){
   for(let j=0;j<n;j++){
    const id='11111111-1111-4111-8111-'+String(i++).padStart(12,'0');
    rows.push({id,source_url:'https://bakirbul.com/urun/'+id+'/',source_host:'bakirbul.com',
-    supplier_sku:'TEST-'+i,name:prefix+' '+(j+1),category:type,image_urls:[photoUrl,photoUrl]});
+    supplier_sku:'TEST-'+i,name:prefix+' '+(j+1),category:type,image_urls:[photoUrl,photoUrl],visibility:'visible'});
   }
  }
  return rows;
