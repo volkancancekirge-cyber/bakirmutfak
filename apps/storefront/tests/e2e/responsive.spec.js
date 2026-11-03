@@ -27,6 +27,10 @@ test.beforeEach(async({page})=>{
    hero_category:'cezve',featured_categories:['caydanlik','cezve','tencere','sunum','dekor']
  };
  const merchRows=new Map();
+ let quoteState={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',contact_name:'Deneme Müşterisi',
+   contact_email:'dummy@example.test',contact_phone:'',message:'Ürün hakkında bilgi',
+   items:[{id:products[0].id,name:products[0].name,sku:products[0].supplier_sku}],
+   status:'new',admin_notes:'',created_at:'2026-11-03T10:00:00.000Z'};
  await page.route('https://images.pexels.com/**',route=>route.fulfill({status:200,contentType:'image/svg+xml',body:image}));
  await page.route(source+'/**',async route=>{
   const request=route.request();
@@ -37,11 +41,8 @@ test.beforeEach(async({page})=>{
   if(url.includes('/auth/v1/user'))return route.fulfill({status:200,headers,body:JSON.stringify({id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',email:'test-admin@example.com'})});
   if(url.includes('bm_admin_users?'))return route.fulfill({status:200,headers,body:JSON.stringify([{user_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',role:'owner'}])});
   if(url.includes('bm_quote_requests?')){
-    const sample={id:'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',contact_name:'Deneme Müşterisi',
-     contact_email:'dummy@example.test',contact_phone:'',message:'Ürün hakkında bilgi',
-     items:[{id:products[0].id,name:products[0].name,sku:products[0].supplier_sku}],
-     status:'new',admin_notes:'',created_at:'2026-11-03T10:00:00.000Z'};
-    return route.fulfill({status:200,headers,body:JSON.stringify(request.method()==='PATCH'?[sample]:[sample])});
+    if(request.method()==='PATCH')quoteState={...quoteState,...request.postDataJSON()};
+    return route.fulfill({status:200,headers,body:JSON.stringify([quoteState])});
   }
   if(url.includes('bm_hydra_settings?')){
    if(request.method()==='PATCH')themeSettings={...themeSettings,...request.postDataJSON()};
