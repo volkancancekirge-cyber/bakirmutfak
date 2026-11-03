@@ -59,7 +59,7 @@ for(const width of [320,375,390,768,1366]){
 test('Category pagination never renders 711 cards at once',async({page})=>{
  await page.goto('/#/catalog/cezve');
  await expect(page.locator('.hy-catalog-grid .hy-product')).toHaveCount(24);
- await page.locator('.hy-pagination a[href*="page=2"]').click();
+ await page.getByRole('link',{name:'2',exact:true}).click();
  await expect(page.locator('.hy-catalog-grid .hy-product')).toHaveCount(9);
  await expect(page.locator('.hy-pagination-caption')).toContainText('Sayfa 2 / 2');
 });
@@ -84,7 +84,7 @@ test('Real catalog item shows no invented price or checkout',async({page})=>{
  await expect(page.locator('.hy-detail-layout h1')).toContainText('Klasik Bakır Cezve');
  await expect(page.locator('.hy-detail-price')).toContainText('Fiyat bilgisi hazırlanıyor');
  await expect(page.locator('.hy-gallery-thumbs button')).toHaveCount(2);
- await expect(page.locator('button')).not.toHaveText(/Satın al/);
+ await expect(page.getByRole('button',{name:/Satın al/})).toHaveCount(0);
  await page.locator('.hy-detail-actions [data-interest]').click();
  await page.locator('#hy-interest-trigger').click();
  await expect(page.locator('.hy-drawer-item')).toHaveCount(1);
