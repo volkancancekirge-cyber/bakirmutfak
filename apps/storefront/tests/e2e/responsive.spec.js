@@ -141,9 +141,9 @@ test('Hydra category order is identical in main catalog pills, sidebar and both 
  expect(pills).toEqual(expected);
  const sidebar=await page.locator('.hy-sidebar nav a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
  expect(sidebar).toEqual(expected);
- const desktop=await page.locator('.hy-nav .hy-container a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ const desktop=await page.locator('.hy-nav .hy-container a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(id=>id!=='catalog'));
  expect(desktop).toEqual(expected.slice(1));
- const mobile=await page.locator('#hy-mobile-menu a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ const mobile=await page.locator('#hy-mobile-menu a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(id=>id!=='catalog'));
  expect(mobile).toEqual(expected.slice(1));
  await page.locator('#hy-filter-toggle').click();
  const filter=await page.locator('.hy-mobile-filter-panel a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
@@ -172,7 +172,7 @@ test('Saving a new Hydra rank immediately changes storefront order after reload'
  await page.goto('/#/catalog/cezve');
  const fromPills=await page.locator('.hy-category-pills a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
  expect(fromPills.slice(0,4)).toEqual(['all','tencere','caydanlik','cezve']);
- const topDesktop=await page.locator('.hy-nav a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(Boolean));
+ const topDesktop=await page.locator('.hy-nav a[href^="#/catalog"]').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(id=>id!=='catalog'));
  expect(topDesktop.slice(0,3)).toEqual(['tencere','caydanlik','cezve']);
  await page.reload();
  const persistedPills=await page.locator('.hy-category-pills a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
