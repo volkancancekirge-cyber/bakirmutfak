@@ -310,3 +310,43 @@ test('Hydra save does not claim success when server updates zero rows',async({pa
  await expect(page.locator('#ha-alert')).toContainText('Kaydedilemedi');
  await expect(page.locator('#ha-alert')).not.toContainText('yeniden okunarak doğrulandı');
 });
+
+
+test('Yardımcı Bakır nested variants: parent/variant identities, VAT, duplicate SKU and stock checks',async({page})=>{
+ await page.goto('/admin.html#/xml');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ const xml='<?xml version="1.0"?><Root><Urunler>'+
+ '<Urun><Aktif>Evet</Aktif><UrunKartiID>10</UrunKartiID><UrunAdi>Bakır Çaydanlık Test</UrunAdi><Marka>Yardımcı Bakır</Marka><KategoriTree>Tüm Ürünler/Pişirme Ürünleri/Çaydanlıklar</KategoriTree><UrunUrl>https://yardimcibakir.com.tr/bakir-test</UrunUrl><UrunSecenek>'+
+ '<Secenek><Aktif>Evet</Aktif><VaryasyonID>11</VaryasyonID><StokKodu>YBKR-TEST-ONE</StokKodu><StokAdedi>100000</StokAdedi><AlisFiyati>0.00</AlisFiyati><SatisFiyati>100.00</SatisFiyati><KDVDahil>false</KDVDahil><KdvOrani>20</KdvOrani><ParaBirimiKodu>TRY</ParaBirimiKodu></Secenek>'+
+ '<Secenek><Aktif>Evet</Aktif><VaryasyonID>12</VaryasyonID><StokKodu>YBKR-TEST-ONE</StokKodu><StokAdedi>100000</StokAdedi><SatisFiyati>120.00</SatisFiyati><KDVDahil>false</KDVDahil><KdvOrani>20</KdvOrani><ParaBirimiKodu>TRY</ParaBirimiKodu></Secenek></UrunSecenek></Urun>'+
+ '<Urun><Aktif>Evet</Aktif><UrunKartiID>20</UrunKartiID><UrunAdi>Bakır Cezve Test</UrunAdi><KategoriTree>Tüm Ürünler/Pişirme Ürünleri/Cezveler &amp; Sütlükler</KategoriTree><UrunUrl>https://yardimcibakir.com.tr/cezve-test</UrunUrl><UrunSecenek>'+
+ '<Secenek><Aktif>Evet</Aktif><VaryasyonID>21</VaryasyonID><StokKodu>YBKR-TEST-TWO</StokKodu><StokAdedi>100000</StokAdedi><AlisFiyati>0.00</AlisFiyati><SatisFiyati>200.50</SatisFiyati><KDVDahil>false</KDVDahil><KdvOrani>20</KdvOrani><ParaBirimiKodu>TRY</ParaBirimiKodu><EkSecenekOzellik><Ozellik Tanim="RENK" Deger="Bakır">Bakır</Ozellik></EkSecenekOzellik><Resimler><Resim>https://static.ticimax.cloud/76209/Uploads/UrunResimleri/buyuk/test.jpg</Resim></Resimler></Secenek></UrunSecenek></Urun>'+
+ '<Urun><Aktif>Hayır</Aktif><UrunKartiID>30</UrunKartiID><UrunAdi>Pasif Bakır Matara</UrunAdi><UrunSecenek><Secenek><Aktif>Evet</Aktif><VaryasyonID>31</VaryasyonID><StokKodu>YBKR-INACTIVE</StokKodu><StokAdedi>5</StokAdedi><SatisFiyati>300.00</SatisFiyati><KDVDahil>false</KDVDahil><KdvOrani>20</KdvOrani><ParaBirimiKodu>TRY</ParaBirimiKodu></Secenek></UrunSecenek></Urun>'+
+ '</Urunler></Root>';
+ await page.locator('#feed-file').setInputFiles({name:'yardimcibakir.xml',mimeType:'application/xml',buffer:Buffer.from(xml)});
+ const result=page.locator('#xml-preview');
+ await expect(result).toContainText('YARDIMCI BAKIR');
+ await expect(result).toContainText('Tekrarlanan SKU: YBKR-TEST-ONE');
+ await expect(result).toContainText('Fiyatlar %20 KDV hariçtir');
+ await expect(result).toContainText('Bakır Cezve Test');
+ await expect(result).toContainText('İçe aktarma kilitli');
+ const items=await result.locator('.stat-card strong').allTextContents();
+ expect(items).toContain('3'); // parent cards
+ expect(items).toContain('4'); // total variants
+ expect(items).toContain('1'); // eligible unique variant
+ expect(items).toContain('2'); // duplicate SKU rows
+ await expect(result.locator('#export-csv')).toBeEnabled();
+ await expect(result.locator('button:disabled')).toContainText('İçe aktarma kilitli');
+});
+test('XML parser rejects DTD and ENTITY even in supplier template',async({page})=>{
+ await page.goto('/admin.html#/xml');
+ await page.locator('#login-form input[name="email"]').fill('test-admin@example.com');
+ await page.locator('#login-form input[name="password"]').fill('test-only-password');
+ await page.locator('#login-form button[type="submit"]').click();
+ await page.locator('#feed-file').setInputFiles({name:'vendor.xml',mimeType:'application/xml',
+ buffer:Buffer.from('<!DOCTYPE Root [ <!ENTITY xxe SYSTEM "file:///etc/passwd"> ]><Root><Urunler><Urun>&xxe;</Urun></Urunler></Root>')});
+ await expect(page.locator('#xml-preview')).toContainText('DTD/ENTITY içeren XML kabul edilmez');
+ await expect(page.locator('#xml-preview button#export-csv')).toHaveCount(0);
+});
