@@ -33,7 +33,7 @@ function imagesFor(node){
   return result;
 }
 export function parseSupplierXml(text){
-  if(text.length>5*1024*1024)throw Error('XML dosyası en fazla 5 MB olabilir.');
+  if(text.length>15*1024*1024)throw Error('XML ön izlemesi en fazla 15 MB destekler. Büyük dosyalar için ayrı sunucu ön inceleme gerekli.');
   if(/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Güvenlik nedeniyle DTD/ENTITY içeren XML kabul edilmez.');
   const doc=new DOMParser().parseFromString(text,'application/xml');
   if(doc.getElementsByTagName('parsererror').length)throw Error('XML biçimi bozuk.');
@@ -41,7 +41,7 @@ export function parseSupplierXml(text){
   const tag=selectors.find(n=>doc.getElementsByTagName(n).length);
   if(!tag)throw Error('XML içinde ürün etiketi bulunamadı (Urun/Product/item).');
   const entries=Array.from(doc.getElementsByTagName(tag));
-  if(entries.length>500)throw Error('Güvenli ön izleme için bir seferde en fazla 500 ürün.');
+  if(entries.length>5000)throw Error('Güvenli ön izleme en fazla 5000 ürün destekler. Büyük dosyalar için parça bazlı kontrol gerekir.');
   const rows=[],errors=[],seen=new Set();
   for(let i=0;i<entries.length;i++){
     const node=entries[i];
@@ -65,4 +65,37 @@ export function csvFromRows(rows){
     const raw=k==='images'?row.image_urls.join('|'):String(row[k]??'');
     return '"'+raw.replace(/"/g,'""')+'"';
   }).join(','))].join('\r\n');
+}
+
+/** Inspect an unknown XML vendor schema locally, without importing or transmitting it. */
+export function inspectSupplierXml(text) {
+ if(typeof text!=='string'||text.length>15*1024*1024)
+   throw Error('XML ön izleme dosyası 15 MB sınırını aşıyor.');
+ if(/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('DTD/ENTITY içeren XML kabul edilmez.');
+ const doc=new DOMParser().parseFromString(text,'application/xml');
+ if(doc.getElementsByTagName('parsererror').length)throw Error('XML biçimi bozuk.');
+ const root=doc.documentElement;
+ if(!root)throw Error('Boş XML dosyası.');
+ const names=new Map();
+ const values=new Map();
+ const elements=Array.from(doc.getElementsByTagName('*'));
+ if(elements.length>100000)throw Error('XML çok fazla etiket içeriyor, sunucu tarafında incelenmeli.');
+ for(const e of elements){
+   const tag=e.localName||e.tagName;
+   const children=Array.from(e.children||[]);
+   if(children.length){
+     const row=names.get(tag)||{name:tag,count:0,fields:new Set()};
+     row.count++;
+     for(const child of children.slice(0,30))row.fields.add(child.localName||child.tagName);
+     for(const attr of Array.from(e.attributes||[]).slice(0,12))row.fields.add('@'+attr.name);
+     names.set(tag,row);
+   }else{
+     values.set(tag,(values.get(tag)||0)+1);
+   }
+ }
+ const rows=Array.from(names.values()).sort((a,b)=>b.count-a.count)
+   .filter(x=>x.count>1).slice(0,7).map(x=>({tag:x.name,count:x.count,fields:[...x.fields].slice(0,24)}));
+ const likely=rows.find(x=>/^(urun|product|item|row|entry|stock|record)$/i.test(x.tag))||rows[0]||null;
+ return {root:root.localName||root.tagName,elementCount:elements.length,rowCandidates:rows,
+   likelyRow:likely,fields:likely?.fields||[],leafCount:values.size};
 }
