@@ -198,6 +198,21 @@ function showPreview() {
    '</div>'+(schema.rowCandidates.length>1?'<p class="hint">Diğer tekrar eden etiketler: '+schema.rowCandidates.slice(1,5).map(x=>esc(x.tag)+' ('+x.count+')').join(' · ')+'</p>':'')+'</details>';
  }
  markup+=alerts.join('');
+ if(report?.source==='yardimcibakir'){
+  markup+='<div class="info-note"><strong>YARDIMCI BAKIR / TİCİMAX VARYASYONLU XML</strong><p>Bu dosyadaki her Secenek ayrı stok kodu, renk/model/ölçü, fiyat ve stok taşır. Aynı UrunKartiID\'ye ait seçenekler bir ürün ailesidir. Varyasyonları ayrı ürün gibi otomatik yayımlamayacağız.</p>'+
+   '<p><strong>Fiyatlar %20 KDV hariçtir.</strong> Alış maliyetleri 0,00 ve stok sayıları temsili olabilir. Müşteriye fiyat veya satın alma seçeneği açılmadan önce tedarikçi teyidi şarttır.</p></div>'+
+   '<div class="stat-grid compact">'+
+   '<div class="stat-card"><small>Ana ürün kartı</small><strong>'+report.totalCards+'</strong></div>'+
+   '<div class="stat-card"><small>Aktif varyasyon</small><strong>'+report.activeVariants+'</strong></div>'+
+   '<div class="stat-card"><small>Pasif/atlanacak</small><strong>'+report.skippedInactive+'</strong></div>'+
+   '<div class="stat-card"><small>SKU çakışması</small><strong>'+report.duplicateSkuCount+'</strong></div></div>'+
+   '<div class="stat-grid compact">'+
+   '<div class="stat-card"><small>Yüksek stok (geçerli)</small><strong>'+report.suspiciousStockCount+'</strong></div>'+
+   '<div class="stat-card"><small>KDV hariç fiyat (geçerli)</small><strong>'+report.vatExclusiveCount+'</strong></div>'+
+   '<div class="stat-card"><small>Alış maliyeti 0 (geçerli)</small><strong>'+report.unpricedCostCount+'</strong></div>'+
+   '<div class="stat-card"><small>Fotoğrafsız seçenek</small><strong>'+report.imagesMissing+'</strong></div></div>'+
+   (report.duplicateCodes?.length?'<div class="alert error">Tekrarlanan SKU: '+report.duplicateCodes.map(esc).join(', ')+'. Bu varyasyonlar otomatik içe aktarmaya uygun değildir.</div>':'');
+ }
  if(report){
   markup+='<div class="stat-grid compact"><div class="stat-card"><small>Toplam ürün</small><strong>'+report.total+'</strong></div>'+
    '<div class="stat-card"><small>Doğrulanabilir</small><strong>'+report.valid+'</strong></div>'+
@@ -215,7 +230,7 @@ function showPreview() {
   }
   markup+='<h3>Örnek ürünler (ilk 20)</h3>'+rows(report.rows.slice(0,20).map(x=>({...x,published:false})))+
    '<div class="preview-actions"><button id="export-csv" class="outline">CSV ön izlemeyi indir</button><button type="button" disabled class="primary">İçe aktarma kilitli · XML eşleştirmesi bekleniyor</button></div>'+
-   '<p class="hint">İlk aşamada hiçbir satış ürünü otomatik yayımlanmayacak. Mevcut 711 ürünle farklı kod/aynı isim tespitleri ayrıca gözden geçirilmeli. Sunucu aktarımı en fazla 500 ürünlük partiler desteklediğinden, büyük XML için işlem planı yapılmalı.</p>';
+   '<p class="hint">Bu yalnızca ön izlemedir. Varyasyonlar ürün aileleri altında gruplanmadan ve stok/KDV/mükerrer SKU sorunu çözülmeden aktarım açılmayacak. Mevcut 711 görünür ürün korunur; sunucu aktarımı en çok 500 kayıtlık partiler gerektirir.</p>';
  }else markup+='<p>Ürün verileri genel XML şemasından çözümlenemedi. Yukarıdaki etiket adlarıyla gerçek tedarikçiye özel alan eşleştirmesi hazırlanmalı. <strong>Hiçbir kayıt değiştirilmedi.</strong></p>';
  mount.innerHTML=markup;
  const csv=$('#export-csv');

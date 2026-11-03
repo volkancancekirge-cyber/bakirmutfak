@@ -1,3 +1,4 @@
+import { isYardimciFeed, parseYardimciFeed } from './yardimci-feed.js';
 // Strict browser-side preview; NO remote XML fetch and NO database write.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const first=(element,names)=>{for(const name of names){const nodes=element.getElementsByTagName(name);if(nodes.length){const txt=nodes[0]?.textContent?.trim();if(txt)return txt}const attr=element.getAttribute(name);if(attr)return attr.trim()}return ''};
@@ -37,6 +38,7 @@ export function parseSupplierXml(text){
   if(/<!DOCTYPE|<!ENTITY/i.test(text))throw Error('Güvenlik nedeniyle DTD/ENTITY içeren XML kabul edilmez.');
   const doc=new DOMParser().parseFromString(text,'application/xml');
   if(doc.getElementsByTagName('parsererror').length)throw Error('XML biçimi bozuk.');
+  if(isYardimciFeed(doc))return parseYardimciFeed(doc);
   const selectors=['Urun','urun','Product','product','item','Item'];
   const tag=selectors.find(n=>doc.getElementsByTagName(n).length);
   if(!tag)throw Error('XML içinde ürün etiketi bulunamadı (Urun/Product/item).');
