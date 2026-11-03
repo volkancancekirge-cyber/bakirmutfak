@@ -20,6 +20,7 @@
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg>
       <input id="hy-search-input" type="search" name="q" placeholder="Cezve, çaydanlık, tencere veya ürün kodu ara..." aria-label="Ürün ara" autocomplete="off" maxlength="120">
       <button type="submit">Ara</button>
+      <div class="hy-search-suggestions" id="hy-search-suggestions" role="listbox" hidden></div>
     </form>
     <div class="hy-header-actions">
       <a href="#/favorites" aria-label="Favorilerim" title="Favorilerim"><svg aria-hidden="true" viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="1.8"><path d="M20.5 8.5c0 4-8.5 10-8.5 10s-8.5-6-8.5-10a4.6 4.6 0 0 1 8.5-2.3 4.6 4.6 0 0 1 8.5 2.3Z"></path></svg><span>Favoriler</span><small class="hy-counter" id="hy-favorites-count">0</small></a>
@@ -61,9 +62,33 @@
 <aside id="hy-drawer" class="hy-drawer" aria-hidden="true" aria-label="İlgi listem">
   <div class="hy-drawer-head"><div><span class="hy-overline">BEĞENDİĞİNİZ ÜRÜNLER</span><h2>İlgi listem <small id="hy-drawer-count">0</small></h2></div><button id="hy-drawer-close" aria-label="Listeyi kapat" type="button">✕</button></div>
   <div id="hy-drawer-items" class="hy-drawer-items"></div>
-  <div class="hy-drawer-bottom"><button class="hy-btn hy-btn-primary" id="hy-copy-list" type="button">Ürün kodlarıyla listeyi kopyala ↗</button><p>Bu liste sipariş oluşturmaz. Ürünler için fiyat ve stok doğrulaması devam ediyor.</p></div>
+  <div class="hy-drawer-bottom"><button class="hy-btn hy-btn-primary" id="hy-open-quote" type="button">Teklif isteği oluştur ↗</button><button class="hy-btn hy-btn-secondary" id="hy-copy-list" type="button">Ürün kodlarını kopyala</button><p>Bu liste sipariş oluşturmaz. Teklif talebi fiyat ve stok onayı yerine geçmez.</p></div>
 </aside>
 <div class="hy-lightbox" id="hy-lightbox" hidden><button type="button" id="hy-lightbox-close" aria-label="Görseli kapat">✕</button><img id="hy-lightbox-image" alt=""></div>
+<div class="hy-compare-tray" id="hy-compare-tray" hidden><span><strong id="hy-compare-count">0</strong> ürün karşılaştırmaya eklendi</span><button id="hy-compare-launch" type="button">Karşılaştır ↗</button></div>
+<nav class="hy-mobile-bottom" aria-label="Mobil hızlı gezinme">
+  <a href="#/" aria-label="Ana sayfa"><span>⌂</span><small>Ana sayfa</small></a>
+  <a href="#/catalog" aria-label="Koleksiyonlar"><span>▦</span><small>Ürünler</small></a>
+  <a href="#/favorites" aria-label="Favorilerim"><span>♡</span><small>Favoriler</small></a>
+  <a href="#/compare" aria-label="Ürün karşılaştır"><span>⇄</span><small>Karşılaştır</small></a>
+  <button type="button" id="hy-mobile-interest" aria-label="İlgi listesi"><span>▤</span><small>Listem</small></button>
+</nav>
+<div id="hy-quote-modal" class="hy-quote-modal" role="dialog" aria-modal="true" aria-labelledby="hy-quote-title" hidden>
+  <div class="hy-quote-dialog">
+    <div class="hy-quote-head"><div><span class="hy-overline">BAKIR MUTFAK · TEKLİF TALEBİ</span><h2 id="hy-quote-title">Ürünlerle ilgileniyorum.</h2><p><strong id="hy-quote-product-count">0</strong> ürün seçildi. Fiyat veya ödeme işlemi oluşturulmayacaktır.</p></div><button id="hy-quote-close" aria-label="Teklif formunu kapat" type="button">✕</button></div>
+    <div class="hy-quote-feedback" id="hy-quote-feedback" role="status" hidden></div>
+    <form id="hy-quote-form">
+      <div class="hy-quote-fields"><label>Ad soyad <input type="text" name="name" minlength="2" maxlength="120" autocomplete="name" required></label>
+      <label>E-posta adresi <input type="email" name="email" maxlength="254" autocomplete="email" required></label>
+      <label>Telefon (isteğe bağlı) <input type="tel" name="phone" maxlength="30" autocomplete="tel"></label></div>
+      <label class="hy-quote-message">Notunuz (isteğe bağlı)<textarea name="message" maxlength="1500" rows="3" placeholder="Ürün veya ölçü tercihleriniz…"></textarea></label>
+      <label class="hy-honeypot" aria-hidden="true">Web sitesi <input name="website" tabindex="-1" autocomplete="off"></label>
+      <label class="hy-quote-consent"><input type="checkbox" name="consent" required> <span>İletişim bilgilerimin ürün teklif talebime yanıt verilmesi için işlenmesini kabul ediyorum. <a href="/privacy.html" target="_blank" rel="noopener">Veri işleme bilgilendirmesini oku.</a></span></label>
+      <div class="hy-quote-actions"><button type="button" id="hy-quote-cancel" class="hy-btn hy-btn-secondary">Vazgeç</button><button type="submit" class="hy-btn hy-btn-primary">Teklif talebini gönder ↗</button></div>
+      <small class="hy-quote-legal">Bu bir sipariş veya satın alma formu değildir. Ödeme bilgisi alınmaz.</small>
+    </form>
+  </div>
+</div>
 <script type="module" src="/src/hydra.js"></script>
 </body>
 </html>
