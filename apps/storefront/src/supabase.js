@@ -23,6 +23,7 @@ async function fetchApi(path, options = {}, authorized = false) {
   const token = authorized ? session.access_token : (rawKey.split('.').length === 3 ? rawKey : null);
   const response = await fetch(url + path, {
     ...options,
+    cache: 'no-store',
     headers: { apikey: rawKey, ...(token ? { Authorization: 'Bearer ' + token } : {}), ...(options.body ? {'Content-Type':'application/json'} : {}), ...(options.headers || {}) }
   });
   if (!response.ok) {
@@ -92,10 +93,12 @@ export async function saveProduct(row) {
 
 export async function updateProduct(id, row) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Geçersiz ürün kimliği.');
-  return fetchApi('/rest/v1/bm_products?id=eq.' + id, {
+  const changed=await fetchApi('/rest/v1/bm_products?id=eq.' + id, {
     method:'PATCH', headers:{ Prefer:'return=representation' },
     body:JSON.stringify(row)
   }, true);
+  if(!Array.isArray(changed)||changed.length!==1||changed[0].id!==id)throw new Error('Ürün kaydedilemedi veya güncelleme yetkisi bulunamadı.');
+  return changed[0];
 }
 
 export async function uploadProductImage(file, sku) {
@@ -215,20 +218,55 @@ export async function hydraMerchandising(){
  return fetchApi('/rest/v1/bm_hydra_merchandising?select=product_id,display_category,featured,sort_priority,hidden_from_storefront&limit=5000');
 }
 export async function saveHydraSettings(values){
- return fetchApi('/rest/v1/bm_hydra_settings?id=eq.1',{
+ const title=String(values.hero_title||'').trim();
+ const subtitle=String(values.hero_subtitle||'').trim();
+ const available=new Set(['cezve','caydanlik','tencere','sunum','dekor','sofra']);
+ const categories=values.featured_categories;
+ if(title.length<8||title.length>90)throw new Error('Vitrin başlığı 8–90 karakter olmalı.');
+ if(subtitle.length<12||subtitle.length>350)throw new Error('Vitrin açıklaması 12–350 karakter olmalı.');
+ if(!['all',...available].includes(values.hero_category))throw new Error('Hero kategorisi geçersiz.');
+ if(!Array.isArray(categories)||categories.length<1||categories.length>6||
+    new Set(categories).size!==categories.length||categories.some(c=>!available.has(c)))
+   throw new Error('Vitrin kategorilerini kontrol et.');
+ const saved=await fetchApi('/rest/v1/bm_hydra_settings?id=eq.1',{
   method:'PATCH',headers:{Prefer:'return=representation'},
-  body:JSON.stringify({...values,updated_at:new Date().toISOString()})
+  body:JSON.stringify({hero_title:title,hero_subtitle:subtitle,
+   hero_category:values.hero_category,featured_categories:categories,updated_at:new Date().toISOString()})
  },true);
+ if(!Array.isArray(saved)||saved.length!==1||saved[0].id!==1||
+    saved[0].hero_title!==title||saved[0].hero_subtitle!==subtitle||
+    saved[0].hero_category!==values.hero_category||
+    JSON.stringify(saved[0].featured_categories)!==JSON.stringify(categories))
+   throw new Error('Sunucu değişikliği doğrulamadı. Kaydedilmemiş olabilir.');
+ const reread=await hydraSettings();
+ if(!reread||reread.hero_title!==title||reread.hero_subtitle!==subtitle||
+    JSON.stringify(reread.featured_categories)!==JSON.stringify(categories)||
+    reread.hero_category!==values.hero_category)
+   throw new Error('Kaydetme yanıtı alındı fakat veritabanındaki kayıt eşleşmiyor. Lütfen tekrar dene.');
+ return reread;
 }
 export async function adminSourceCatalog(){
  return fetchApi('/rest/v1/bm_source_catalog?select=id,name,category,source_host,supplier_sku,image_urls,visibility&order=created_at.desc&limit=5000',{},true);
 }
 export async function saveHydraMerchandising(product_id,values){
  if(!/^[0-9a-f-]{36}$/i.test(product_id))throw new Error('Ürün kimliği geçersiz.');
- return fetchApi('/rest/v1/bm_hydra_merchandising?on_conflict=product_id',{
+ if(values.display_category!==null&&!['cezve','caydanlik','tencere','sunum','dekor','sofra'].includes(values.display_category))
+    throw new Error('Kategori geçersiz.');
+ if(!Number.isInteger(values.sort_priority)||Math.abs(values.sort_priority)>1000)
+    throw new Error('Öncelik -1000 ile 1000 arasında olmalı.');
+ const update={display_category:values.display_category,featured:!!values.featured,
+   sort_priority:values.sort_priority,hidden_from_storefront:!!values.hidden_from_storefront};
+ const saved=await fetchApi('/rest/v1/bm_hydra_merchandising?on_conflict=product_id',{
   method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=representation'},
-  body:JSON.stringify([{product_id,...values,updated_at:new Date().toISOString()}])
+  body:JSON.stringify([{product_id,...update,updated_at:new Date().toISOString()}])
  },true);
+ if(!Array.isArray(saved)||saved.length!==1||saved[0].product_id!==product_id)
+   throw new Error('Vitrin değişikliği sunucu tarafından kaydedilmedi.');
+ const reread=await fetchApi('/rest/v1/bm_hydra_merchandising?select=product_id,display_category,featured,sort_priority,hidden_from_storefront&product_id=eq.'+product_id,{},true);
+ const row=reread?.[0];
+ if(!row||Object.entries(update).some(([key,value])=>row[key]!==value))
+   throw new Error('Kaydetme doğrulaması başarısız. Kayıt güncel değil.');
+ return row;
 }
 export async function adminQuoteRequests(){
  return fetchApi('/rest/v1/bm_quote_requests?select=id,contact_name,contact_email,contact_phone,message,items,status,admin_notes,created_at&order=created_at.desc&limit=100',{},true);
