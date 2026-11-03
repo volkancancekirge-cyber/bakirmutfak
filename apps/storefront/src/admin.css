@@ -140,3 +140,75 @@
 .bulk-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .bulk-actions button{min-height:44px}
 @media(max-width:650px){.bulk-stats{grid-template-columns:1fr}.bulk-actions{display:grid;grid-template-columns:1fr}.bulk-actions button{width:100%}}
+
+
+/* Hydra Admin 2.0 — visual storefront curation and private customer CRM */
+.hydra-admin-panel{display:flex;flex-direction:column;gap:20px}
+.hydra-admin-panel>.panel{margin:0}
+.hydra-admin-panel h3{font:500 23px Georgia,serif;margin:26px 0 14px}
+.hydra-admin-panel .form-grid select,.hydra-admin-panel .form-grid input{width:100%;padding:11px;border:1px solid #ded8ce;border-radius:6px;background:#fff;margin-top:9px;color:#333}
+.hydra-admin-panel .form-block textarea{resize:vertical;line-height:1.7}
+.ha-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-bottom:25px}
+.ha-order-row{display:flex;justify-content:space-between;align-items:center;gap:11px;padding:13px 14px;background:#f9f5ef;border:1px solid #e6dbce;border-radius:7px;font-size:12px}
+.ha-order-row>label{display:flex;align-items:center;gap:6px}
+.ha-order-row input[type=checkbox]{width:17px;height:17px;accent-color:#a66c49}
+.ha-order-row select{border:1px solid #d7cdbf;background:white;border-radius:6px;padding:8px}
+.ha-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px 0 20px}
+.ha-toolbar>input{flex:1;min-width:220px;border:1px solid #ded5c9;background:#fff;border-radius:7px;padding:12px;font-size:12px}
+.ha-toolbar>select,.ha-toolbar select{background:#fff;border:1px solid #ded5c9;border-radius:7px;padding:10px}
+.ha-toolbar>small{font-size:11px;color:#897e73}
+.ha-list{display:flex;flex-direction:column;gap:9px}
+.ha-product-row{display:grid;grid-template-columns:72px minmax(150px,1fr) minmax(125px,150px) 78px 83px 79px auto;gap:13px;align-items:center;border:1px solid #e9e1d8;background:#fff;border-radius:8px;padding:11px}
+.ha-product-row>img,.ha-product-placeholder{width:72px;height:77px;object-fit:contain;background:#f7f4ef;border-radius:5px}
+.ha-product-placeholder{display:grid;place-items:center;color:#a5795c;font:24px Georgia,serif}
+.ha-product-identity{min-width:0}
+.ha-product-identity strong{display:block;font-size:12px;line-height:1.5;max-width:260px}
+.ha-product-identity small{display:block;color:#827971;font-size:10px;line-height:1.4;margin-top:5px;word-break:break-word}
+.ha-product-row>label{display:flex;flex-direction:column;gap:7px;font-size:10px;font-weight:700}
+.ha-product-row input[type=checkbox]{accent-color:#a66d4f;width:17px;height:17px}
+.ha-product-row select,.ha-product-row input[type=number]{width:100%;min-width:0;max-width:160px;border:1px solid #ddd3c8;border-radius:5px;padding:9px;background:white;color:#35342f;font-size:11px}
+.ha-product-row button{white-space:nowrap;font-size:11px;padding:10px!important}
+.ha-paging{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:22px}
+.ha-paging span{font-size:12px;color:#857c72}
+.ha-quote{border:1px solid #e9e1d7;border-radius:11px;padding:23px;margin-top:15px;background:#fffcf8}
+.ha-quote-head{display:flex;justify-content:space-between;gap:18px;align-items:start}
+.ha-quote-head h3{font:500 26px Georgia,serif;margin:12px 0 7px}
+.ha-quote-head a{display:block;color:#9b6144;text-decoration:underline;font-size:13px}
+.ha-quote-head small{display:block;margin-top:7px;color:#7c7369}
+.ha-quote-products{border-top:1px solid #e7ded3;margin-top:19px;padding-top:16px}
+.ha-quote-products strong{font-size:12px}
+.ha-quote-products ol{padding-left:21px;font-size:12px;line-height:1.9}
+.ha-quote-products li small{color:#8a8177;margin-left:10px}
+.ha-quote-message{font-size:12px;line-height:1.85;background:#f6f0e8;padding:12px 16px;border-radius:7px}
+.ha-quote form{margin-top:20px;display:flex;flex-direction:column;align-items:start;gap:10px}
+.ha-quote form>label{font-size:12px;font-weight:700;display:block;width:100%}
+.ha-quote form select{padding:10px;border:1px solid #ded3c6;border-radius:6px;margin-left:8px}
+.ha-quote form textarea{width:100%;max-width:600px;background:#fff;border:1px solid #ded3c6;border-radius:6px;padding:12px;margin-top:8px;resize:vertical}
+@media(max-width:1400px){
+ .ha-product-row{grid-template-columns:65px minmax(130px,1fr) minmax(112px,140px) 73px 73px auto;gap:9px}
+ .ha-product-row>label:nth-of-type(4){grid-column:4}
+ .ha-product-row>button{grid-column:6}
+}
+@media(max-width:1040px){
+ .ha-product-row{grid-template-columns:70px minmax(160px,1fr) minmax(130px,1fr) auto}
+ .ha-product-row>label:nth-of-type(2),.ha-product-row>label:nth-of-type(3),.ha-product-row>label:nth-of-type(4){grid-column:auto}
+ .ha-product-row>button{grid-column:auto}
+ .ha-product-row>label{font-size:11px}
+}
+@media(max-width:650px){
+ .hydra-admin-panel>.panel{padding:17px 13px}
+ .ha-order-grid{grid-template-columns:1fr}
+ .ha-toolbar{display:grid;grid-template-columns:1fr}
+ .ha-toolbar>input{min-width:0}
+ .ha-product-row{grid-template-columns:62px minmax(0,1fr) minmax(0,1fr);gap:9px;padding:10px}
+ .ha-product-row>img,.ha-product-placeholder{width:62px;height:67px}
+ .ha-product-identity{grid-column:2/-1}
+ .ha-product-row>label:nth-of-type(1){grid-column:1/-1}
+ .ha-product-row>label:nth-of-type(2){grid-column:1}
+ .ha-product-row>label:nth-of-type(3){grid-column:2}
+ .ha-product-row>label:nth-of-type(4){grid-column:3}
+ .ha-product-row>button{grid-column:1/-1;width:100%}
+ .ha-quote{padding:15px}
+ .ha-quote-head{flex-direction:column}
+ .ha-quote-head h3{font-size:22px}
+}
