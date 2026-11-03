@@ -78,7 +78,7 @@ function home(){
  const heroImage=heroProduct?photoOf(heroProduct):fallbackImage('all');
  return '<div class="hy-home">'+
   '<section class="hy-hero hy-container"><div class="hy-hero-copy"><span class="hy-overline"><span class="hy-sparkle">✦</span> BAKIR MUTFAK · HYDRA COMMERCE</span>'+
-  '<h1>'+escapeHTML(state.settings.hero_title).replace(/\bbakırın\b/i,'<em>bakırın</em>')+'</h1><p>'+escapeHTML(state.settings.hero_subtitle)+'</p>'+
+  '<h1>'+escapeHTML(state.settings.hero_title).replace(/\bbakırın\b/i,word=>'<em>'+word+'</em>')+'</h1><p>'+escapeHTML(state.settings.hero_subtitle)+'</p>'+
   '<div class="hy-hero-actions"><a href="#/catalog" class="hy-btn hy-btn-primary">Tüm ürünleri keşfet <span>↗</span></a><a href="#/catalog/cezve" class="hy-hero-secondary">Cezvelere göz at →</a></div>'+
   '<div class="hy-hero-stats"><span><strong>'+state.products.length+'</strong><small>katalog ürünü</small></span><span><strong>6</strong><small>ürün grubu</small></span><span class="hy-stats-note">Fiyatlar ve stoklar teyit aşamasında</span></div></div>'+
   '<div class="hy-hero-art"><img src="'+escapeHTML(heroImage)+'" alt="'+escapeHTML(heroProduct?.name||'Bakır Mutfak koleksiyonu')+'" fetchpriority="high" loading="eager">'+
