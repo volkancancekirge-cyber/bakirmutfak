@@ -2,6 +2,7 @@ import './admin.css';
 import {configured,currentSession,login,logout,getAdmin,adminProducts,setPublished,saveProduct,updateProduct,uploadProductImage,productAudit,researchSources,addResearchSource,setResearchPermission,adminSourceCatalog} from './supabase.js';
 import {mountProductEditor} from './product-editor.js';
 import {mountHydraAdmin} from './hydra-admin.js';
+import {mountProductContentAdmin} from './product-content-admin.js';
 import {mountQuoteInbox} from './quote-admin.js';
 import {mountPhotoReview} from './photo-review.js';
 import {mountBulkCatalog} from './bulk-import.js';
@@ -10,7 +11,7 @@ import {parseSupplierXml,csvFromRows,inspectSupplierXml} from './xml.js';
 const $=s=>document.querySelector(s);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=v=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(Number(v)||0);
-const ADMIN_TABS = new Set(['dashboard','products','xml','sources','hydra','quotes','history']);
+const ADMIN_TABS = new Set(['dashboard','products','xml','sources','hydra','content','quotes','history']);
 const ADMIN_TAB_KEY = 'bakirmutfak.admin.active-tab';
 function tabFromHash() {
   const path=decodeURIComponent((location.hash||'').replace(/^#\/?/,'')).split(/[/?]/)[0];
@@ -51,7 +52,7 @@ window.addEventListener('popstate',restoreHistoryTab);
 window.addEventListener('hashchange',restoreHistoryTab);
 function status(message,error=false){const el=$('#status');if(el){el.textContent=message;el.className=error?'alert error':'alert';el.hidden=false;}}
 function shell(content){
-$('#admin-app').innerHTML='<div class="app-shell"><aside class="sidebar"><a class="mark" href="/"><span>BM✳</span><strong>BAKIR MUTFAK<small>YÖNETİM SİSTEMİ</small></strong></a><div class="subhead">ÇALIŞMA ALANI</div><button data-tab="dashboard" class="'+(tab==='dashboard'?'active':'')+'">▦ &nbsp; Genel Bakış</button><button data-tab="products" class="'+(tab==='products'?'active':'')+'">◈ &nbsp; Ürün Yönetimi</button><button data-tab="xml" class="'+(tab==='xml'?'active':'')+'">⇅ &nbsp; XML Tedarikçiler</button><button data-tab="sources" class="'+(tab==='sources'?'active':'')+'">⌕ &nbsp; İnternetten Ürün Araştır</button><button data-tab="hydra" class="'+(tab==='hydra'?'active':'')+'">✦ &nbsp; Hydra Vitrin</button><button data-tab="quotes" class="'+(tab==='quotes'?'active':'')+'">✉ &nbsp; Teklif Talepleri</button><button data-tab="history" class="'+(tab==='history'?'active':'')+'">◷ &nbsp; İşlem Geçmişi</button><div class="sidebar-bottom"><a href="/" target="_blank" rel="noopener">↗ Mağazaya git</a><button id="logout">Oturumu kapat</button></div></aside><main class="workspace"><header class="workspace-header"><div><span class="eyebrow">BAKIR MUTFAK · YÖNETİCİ PANELİ</span><h1>'+({dashboard:'Genel Bakış',products:'Ürün Yönetimi',xml:'XML Ürün Aktarımı',history:'Ürün İşlem Geçmişi',sources:'Ürün Kaynak Araştırması',hydra:'Hydra Vitrin Yönetimi',quotes:'Müşteri Teklif Talepleri'}[tab])+'</h1></div><div class="profile"><span class="profile-dot">✳</span><small>'+esc(user.email||'Yönetici')+'</small></div></header><div id="status" class="alert" hidden></div>'+content+'<footer class="workspace-footer">Geliştirme sürümü. Sipariş, ödeme ve otomatik XML senkronizasyonu henüz aktif değildir.</footer></main></div>';
+$('#admin-app').innerHTML='<div class="app-shell"><aside class="sidebar"><a class="mark" href="/"><span>BM✳</span><strong>BAKIR MUTFAK<small>YÖNETİM SİSTEMİ</small></strong></a><div class="subhead">ÇALIŞMA ALANI</div><button data-tab="dashboard" class="'+(tab==='dashboard'?'active':'')+'">▦ &nbsp; Genel Bakış</button><button data-tab="products" class="'+(tab==='products'?'active':'')+'">◈ &nbsp; Ürün Yönetimi</button><button data-tab="xml" class="'+(tab==='xml'?'active':'')+'">⇅ &nbsp; XML Tedarikçiler</button><button data-tab="sources" class="'+(tab==='sources'?'active':'')+'">⌕ &nbsp; İnternetten Ürün Araştır</button><button data-tab="hydra" class="'+(tab==='hydra'?'active':'')+'">✦ &nbsp; Hydra Vitrin</button><button data-tab="content" class="'+(tab==='content'?'active':'')+'">≡ &nbsp; Ürün İçerikleri</button><button data-tab="quotes" class="'+(tab==='quotes'?'active':'')+'">✉ &nbsp; Teklif Talepleri</button><button data-tab="history" class="'+(tab==='history'?'active':'')+'">◷ &nbsp; İşlem Geçmişi</button><div class="sidebar-bottom"><a href="/" target="_blank" rel="noopener">↗ Mağazaya git</a><button id="logout">Oturumu kapat</button></div></aside><main class="workspace"><header class="workspace-header"><div><span class="eyebrow">BAKIR MUTFAK · YÖNETİCİ PANELİ</span><h1>'+({dashboard:'Genel Bakış',products:'Ürün Yönetimi',xml:'XML Ürün Aktarımı',history:'Ürün İşlem Geçmişi',sources:'Ürün Kaynak Araştırması',hydra:'Hydra Vitrin Yönetimi',content:'Ürün Açıklamaları',quotes:'Müşteri Teklif Talepleri'}[tab])+'</h1></div><div class="profile"><span class="profile-dot">✳</span><small>'+esc(user.email||'Yönetici')+'</small></div></header><div id="status" class="alert" hidden></div>'+content+'<footer class="workspace-footer">Geliştirme sürümü. Sipariş, ödeme ve otomatik XML senkronizasyonu henüz aktif değildir.</footer></main></div>';
 }
 function loginScreen(){
 $('#admin-app').innerHTML='<div class="login-wrap"><div class="login-aside"><span>BAKIR MUTFAK / SIGNATURE</span><h2>İyi bir mağazanın<br><em>güçlü bir kalbi olur.</em></h2><p>Ürün, fiyat, stok ve XML yönetimi tek noktada.</p><div class="copper-orb"></div></div><div class="login-panel"><a class="backlink" href="/">← Mağazaya dön</a><div class="login-card"><span class="eyebrow">YÖNETİCİ GİRİŞİ</span><h1>Tekrar hoş geldin.</h1><p>Yönetim paneline erişmek için Supabase hesabınla giriş yap.</p><div id="login-error" class="alert error" hidden></div><form id="login-form"><label>E-posta adresi<input name="email" type="email" autocomplete="username" required/></label><label>Şifre<input name="password" type="password" autocomplete="current-password" required/></label><button class="primary" type="submit">Giriş yap →</button></form>'+(configured?'':'<div class="alert error">Supabase proje bağlantısı henüz yapılandırılmadı. Gerçek admin girişi açılamaz.</div>')+'<small>Yetkili yönetici hesabınla giriş yap. Yeni yönetici erişimleri mağaza sahibi tarafından tanımlanır.</small></div></div></div>';
@@ -116,7 +117,7 @@ function attachSourceActions(){
 
 function render(){
 if(!user){loginScreen();return;}
-const content=tab==='products'?productsView():tab==='xml'?xmlView():tab==='history'?historyView():tab==='sources'?sourceView():tab==='hydra'||tab==='quotes'?'':dashboard();
+const content=tab==='products'?productsView():tab==='xml'?xmlView():tab==='history'?historyView():tab==='sources'?sourceView():tab==='hydra'||tab==='quotes'||tab==='content'?'':dashboard();
 shell(content);
 $('#logout').onclick=()=>{logout();user=null;preview=null;rememberTab('dashboard',false);loginScreen()};
 document.querySelectorAll('[data-tab]').forEach(btn=>btn.addEventListener('click',()=>goToTab(btn.dataset.tab)));
@@ -129,6 +130,7 @@ if(tab==='xml'){const field=$('#feed-file');field.onchange=onFeed;if(previewStru
 if(tab==='history')$('#refresh-history').onclick=async()=>{try{audit=await productAudit();render()}catch(e){status(e.message,true)}};
 if(tab==='sources') { attachSourceActions(); const workspace=document.querySelector('.workspace'); mountBulkCatalog(workspace).catch(err=>status('Toplu aktarım ekranı hazırlanamadı: '+err.message,true)); mountPhotoReview(workspace).catch(err=>status('Görsel paneli hazırlanamadı: '+err.message,true)); }
 if(tab==='hydra')mountHydraAdmin(document.querySelector('.workspace')).catch(e=>status('Hydra vitrin paneli hatası: '+e.message,true));
+if(tab==='content')mountProductContentAdmin(document.querySelector('.workspace')).catch(e=>status('Ürün içerikleri paneli hatası: '+e.message,true));
 if(tab==='quotes')mountQuoteInbox(document.querySelector('.workspace')).catch(e=>status('Teklif paneli hatası: '+e.message,true));
 }
 function openEditor(product) {
