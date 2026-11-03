@@ -330,3 +330,14 @@ export async function saveCatalogContent(product_id,input){
     throw new Error('Ürün açıklaması kaydedilmiş görünse de yeniden okuma doğrulaması başarısız.');
  return row;
 }
+
+
+export async function previewSupplierContent(product_id){
+ if(!/^[0-9a-f-]{36}$/i.test(product_id))throw new Error('Kaynak ürün kimliği geçersiz.');
+ const result=await fetchApi('/functions/v1/supplier-content-preview',{
+  method:'POST',body:JSON.stringify({product_id})
+ },true);
+ if(!result?.ok||result.requires_review!==true||typeof result.description!=='string')
+   throw new Error('Tedarikçi metni incelenemedi.');
+ return result;
+}
