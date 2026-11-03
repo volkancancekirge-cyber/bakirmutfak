@@ -265,10 +265,12 @@ function attachEvents(){
  };
  by('#hy-menu-toggle').onclick=()=>{const m=by('#hy-mobile-menu');m.hidden=!m.hidden;by('#hy-menu-toggle').setAttribute('aria-expanded',String(!m.hidden))};
  by('#hy-interest-trigger').onclick=showDrawer;
+ by('#hy-mobile-interest').onclick=showDrawer;
  by('#hy-compare-launch').onclick=()=>navigateHash('/compare');
  by('#hy-drawer-close').onclick=closeDrawer;
  by('#hy-open-quote').onclick=openQuoteForm;
  by('#hy-quote-close').onclick=closeQuoteForm;
+ by('#hy-quote-modal').onclick=e=>{if(e.target.id==='hy-quote-modal')closeQuoteForm();};
  by('#hy-quote-cancel').onclick=closeQuoteForm;
  by('#hy-quote-form').onsubmit=submitQuoteForm;
  by('#hy-shade').onclick=closeDrawer;
@@ -303,6 +305,7 @@ function openQuoteForm(){
  closeDrawer();
  const modal=by('#hy-quote-modal'),form=by('#hy-quote-form');
  const count=state.products.filter(p=>interest.has(p.id)).length;
+ if(count>20){alert('Teklif formuna en fazla 20 ürün eklenebilir. İlgi listenizi 20 ürüne indirin.');return;}
  by('#hy-quote-product-count').textContent=String(count);
  by('#hy-quote-feedback').hidden=true;
  form.hidden=false;
