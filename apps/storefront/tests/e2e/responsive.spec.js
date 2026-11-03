@@ -157,7 +157,7 @@ test('Hydra Admin 2.0 owner flow controls hero and catalog without exposed crede
  await page.locator('#login-form input[name="password"]').fill('test-only-password');
  await page.locator('#login-form button[type="submit"]').click();
  await expect(page.locator('.app-shell')).toBeVisible();
- await page.locator('[data-tab="hydra"]').click();
+ await page.locator('.sidebar [data-tab="hydra"]').click();
  await expect(page.locator('#ha-hero-form')).toBeVisible();
  await expect(page.locator('.ha-product-row')).toHaveCount(24);
  await page.locator('#ha-hero-form input[name="hero_title"]').fill('Yeni Hydra koleksiyonu başlığı');
@@ -172,7 +172,7 @@ test('Hydra Admin 2.0 private quote inbox uses owner session',async({page})=>{
  await page.locator('#login-form input[name="password"]').fill('test-only-password');
  await page.locator('#login-form button[type="submit"]').click();
  await expect(page.locator('.app-shell')).toBeVisible();
- await page.locator('[data-tab="quotes"]').click();
+ await page.locator('.sidebar [data-tab="quotes"]').click();
  await expect(page.locator('.ha-quote')).toHaveCount(1);
  await expect(page.locator('.ha-quote')).toContainText('Deneme Müşterisi');
  await page.locator('.ha-quote select[name="status"]').selectOption('reviewing');
