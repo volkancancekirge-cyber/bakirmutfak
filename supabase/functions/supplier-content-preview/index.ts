@@ -104,6 +104,6 @@ Deno.serve(async req=>{
   const parsed=extract(html);
   if(parsed.description.length<30)return json(422,{error:"Bu kaynakta güvenilir açıklama metni bulunamadı. Ürünü kaynak sitesinde açıp manuel doğrulayabilirsin."});
   return json(200,{ok:true,source_url:u.toString(),source_host:u.hostname,source_kind:"supplier_page",
-   name:p.name,source_title:parsed.source_title,...parsed,review_status:"draft",requires_review:true});
+   name:p.name,...parsed,review_status:"draft",requires_review:true});
  }catch(e){return json(422,{error:String(e instanceof Error?e.message:"Kaynak okunamadı").slice(0,170)});}
 });
