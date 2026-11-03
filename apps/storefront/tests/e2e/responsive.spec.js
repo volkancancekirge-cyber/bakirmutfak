@@ -145,6 +145,7 @@ test('Hydra category order is identical in main catalog pills, sidebar and both 
  expect(desktop).toEqual(expected.slice(1));
  const mobile=await page.locator('#hy-mobile-menu a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()).filter(id=>id!=='catalog'));
  expect(mobile).toEqual(expected.slice(1));
+ await page.setViewportSize({width:390,height:850});
  await page.locator('#hy-filter-toggle').click();
  const filter=await page.locator('.hy-mobile-filter-panel a').evaluateAll(nodes=>nodes.map(n=>n.getAttribute('href').split('/').pop()));
  expect(filter).toEqual(expected);
