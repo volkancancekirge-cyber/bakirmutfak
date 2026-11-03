@@ -54,11 +54,12 @@ Deno.serve(async(request)=>{
     client.from("bm_products").select("id,name,sku").eq("published",true).filter("id","in",idsFilter)
   ]);
   if(results.some(v=>v.error))throw Error("product check failed");
-  const names=new Map([...results[0].data||[],...results[1].data||[]].map(p=>[p.id,p]));
+  const clean=[...(results[0].data||[]).map(p=>({id:String(p.id),name:String(p.name),sku:String(p.supplier_sku||"")})),...(results[1].data||[]).map(p=>({id:String(p.id),name:String(p.name),sku:String(p.sku||"")}))];
+  const names=new Map<string,{id:string,name:string,sku:string}>(clean.map(p=>[p.id,p]));
   if(names.size!==ids.length)return respond(422,{error:"Bazı ürünler artık katalogda yok. Listenizi yenileyin."});
   const snapshot=ids.map(id=>{
-    const p=names.get(id);
-    return {id,name:String(p.name).slice(0,250),sku:String(p.supplier_sku||p.sku||"").slice(0,120)};
+    const p=names.get(id)!;
+    return {id,name:String(p.name).slice(0,250),sku:String(p.sku||"").slice(0,120)};
   });
   const {data,error}=await client.from("bm_quote_requests").insert({
     contact_name:name,contact_email:email,contact_phone:phone,message,items:snapshot,
