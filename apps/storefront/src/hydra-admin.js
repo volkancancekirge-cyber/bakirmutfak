@@ -27,7 +27,7 @@ export async function mountHydraAdmin(workspace){
      [['all','Tüm ürünler'],...options].map(([id,label])=>'<option value="'+id+'" '+(cfg.hero_category===id?'selected':'')+'>'+esc(label)+'</option>').join('')+'</select></label></div>'+
     '<label class="form-block">Ana sayfa açıklaması<textarea name="hero_subtitle" rows="3" minlength="12" maxlength="350" required>'+esc(cfg.hero_subtitle)+'</textarea></label>'+
     '<h3>Kategori vitrini ve sıralaması</h3><p class="hint">Burada belirlediğin sıra, ana sayfa vitrinlerine, üst menüye, kategori şeridine ve mobil filtrelere de yansır. Tüm ürünler her zaman ilk sıradadır; işaretlenmeyen kategoriler sonda kalır.</p><div class="ha-order-grid">'+ordered.map(x=>
-     '<div class="ha-order-row"><label><input data-category-enabled="'+x.id+'" type="checkbox" '+(x.enabled?'checked':'')+'> '+esc(x.label)+'</label>'+
+     '<div class="ha-order-row" data-category-row="'+x.id+'"><label><input data-category-enabled="'+x.id+'" type="checkbox" '+(x.enabled?'checked':'')+'> '+esc(x.label)+'</label>'+
      '<label>Sıra <select data-category-order="'+x.id+'" '+(x.enabled?'':'disabled')+'>'+(!x.enabled?'<option value="">—</option>':'')+Array.from({length:6},(_,i)=>'<option value="'+i+'" '+(x.position===i?'selected':'')+'>'+(i+1)+'</option>').join('')+'</select></label></div>'
     ).join('')+'</div><button class="primary" type="submit">Vitrin ayarlarını kaydet ↗</button></form>';
   const heroForm=pane.querySelector('#ha-hero-form');
@@ -51,6 +51,11 @@ export async function mountHydraAdmin(workspace){
         input.value=String(index);
       }
     });
+    const grid=heroForm.querySelector('.ha-order-grid');
+    for(const id of [...ids,...options.map(x=>x[0]).filter(id=>!ids.includes(id))]){
+      const row=grid.querySelector('[data-category-row="'+id+'"]');
+      if(row)grid.appendChild(row);
+    }
   }
   heroForm.querySelectorAll('[data-category-order]').forEach(select=>select.addEventListener('change',()=>{
     const id=select.dataset.categoryOrder;
@@ -65,6 +70,7 @@ export async function mountHydraAdmin(workspace){
     if(input.checked)ids.push(id);
     setPositions(ids);
   }));
+  setPositions((cfg.featured_categories||[]).filter(id=>options.some(x=>x[0]===id)));
   pane.querySelector('#ha-hero-form').addEventListener('input',()=>{
     const save=pane.querySelector('#ha-hero-form button[type="submit"]');
     if(save&&!save.disabled)save.textContent='Vitrin ayarlarını kaydet ↗';
