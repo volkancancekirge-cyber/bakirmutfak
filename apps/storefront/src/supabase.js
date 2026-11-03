@@ -77,18 +77,24 @@ export async function adminProducts() {
 
 export async function setPublished(id, value) {
   if (!/^[0-9a-f-]{36}$/i.test(id)) throw new Error('Geçersiz ürün kimliği');
-  return fetchApi('/rest/v1/bm_products?id=eq.' + id, {
+  const saved=await fetchApi('/rest/v1/bm_products?id=eq.' + id, {
     method:'PATCH',
     headers:{ Prefer:'return=representation' },
     body:JSON.stringify({published:!!value})
   }, true);
+  if(!Array.isArray(saved)||saved.length!==1||saved[0].id!==id||saved[0].published!==!!value)
+    throw new Error('Ürün yayın durumu sunucuda doğrulanamadı.');
+  return saved[0];
 }
 
 export async function saveProduct(row) {
-  return fetchApi('/rest/v1/bm_products', {
+  const saved=await fetchApi('/rest/v1/bm_products', {
     method:'POST', headers:{ Prefer:'return=representation' },
     body:JSON.stringify([row])
   }, true);
+  if(!Array.isArray(saved)||saved.length!==1||!saved[0].id)
+    throw new Error('Yeni ürün veritabanına kaydedilmedi.');
+  return saved[0];
 }
 
 export async function updateProduct(id, row) {
@@ -274,10 +280,15 @@ export async function adminQuoteRequests(){
 export async function updateQuoteRequest(id,status,admin_notes){
  if(!/^[0-9a-f-]{36}$/i.test(id))throw new Error('Geçersiz teklif kimliği.');
  if(!['new','reviewing','answered','closed'].includes(status))throw new Error('Geçersiz talep durumu.');
- return fetchApi('/rest/v1/bm_quote_requests?id=eq.'+id,{
+ const notes=String(admin_notes||'').slice(0,3000);
+ const saved=await fetchApi('/rest/v1/bm_quote_requests?id=eq.'+id,{
   method:'PATCH',headers:{Prefer:'return=representation'},
-  body:JSON.stringify({status,admin_notes:String(admin_notes||'').slice(0,3000),updated_at:new Date().toISOString()})
+  body:JSON.stringify({status,admin_notes:notes,updated_at:new Date().toISOString()})
  },true);
+ if(!Array.isArray(saved)||saved.length!==1||saved[0].id!==id||
+    saved[0].status!==status||saved[0].admin_notes!==notes)
+    throw new Error('Talep güncellemesi sunucuda doğrulanamadı.');
+ return saved[0];
 }
 export async function submitQuoteRequest(data){
  return fetchApi('/functions/v1/hydra-quote-request',{
